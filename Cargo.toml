@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "jhira",
+    "jhira_core"
+]
