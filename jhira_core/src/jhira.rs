@@ -41,7 +41,12 @@ impl Jhira {
     pub fn from_args(args: Vec<String>) -> Result<Jhira, failure::Error> {
         let strs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
         let opt: Args = Args::from_iter(strs);
-        dbg!(opt);
+        use Subcommands::*;
+        let upcoming = match opt.cmd {
+            Issues { cmd } => cmd.match_cmd(),
+            Worklog { cmd } => cmd.match_cmd(),
+        };
+        dbg!(upcoming);
         Ok(Jhira { args })
     }
 }

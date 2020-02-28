@@ -8,3 +8,15 @@ pub enum Issues {
     #[structopt(name = "ls")]
     Ls,
 }
+
+impl Issues {
+    pub fn match_cmd(&self) -> Result<(), failure::Error> {
+        use Issues::*;
+        match self {
+            Ls => {
+                println!("issues ls!");
+            }
+        };
+        Ok(())
+    }
+}
