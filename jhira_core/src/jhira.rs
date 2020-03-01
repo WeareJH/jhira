@@ -1,8 +1,8 @@
-use crate::issues::Issues;
 use crate::worklog::Worklog;
 use structopt::StructOpt;
-use std::future::Future;
-use crate::task::Task;
+
+use crate::async_task::AsyncTask;
+use crate::issues::cmd::IssuesCmd;
 
 #[derive(Debug)]
 pub struct Jhira {
@@ -10,21 +10,23 @@ pub struct Jhira {
 }
 
 #[derive(StructOpt, Debug)]
-struct Args {
+pub struct Args {
+    #[structopt(long = "dryrun")]
+    pub dry_run: bool,
     #[structopt(short = "v", long = "verbose")]
-    verbose: bool,
+    pub verbose: bool,
     #[structopt(subcommand)]
-    cmd: Subcommands,
+    pub cmd: Subcommands,
 }
 
 #[derive(StructOpt, Debug)]
-enum Subcommands {
+pub enum Subcommands {
     #[structopt(name = "issues")]
     Issues {
         #[structopt(subcommand)]
-        cmd: Issues,
+        cmd: IssuesCmd,
     },
-    #[structopt(name = "worklog", alias="wl")]
+    #[structopt(name = "worklog", alias = "wl")]
     Worklog {
         #[structopt(subcommand)]
         cmd: Worklog,
@@ -40,14 +42,15 @@ pub enum CliError {
 }
 
 impl Jhira {
-    pub fn from_args(args: Vec<String>) -> Result<Vec<Box<dyn Task>>, failure::Error> {
+    pub fn from_args(args: Vec<String>) -> Result<(Args, Vec<Box<dyn AsyncTask>>), failure::Error> {
         let strs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-        let opt: Args = Args::from_iter(strs);
+        let opt: Args = Args::from_iter(&strs);
+        let opt2: Args = Args::from_iter(&strs);
         use Subcommands::*;
         let upcoming = match opt.cmd {
             Issues { cmd } => cmd.match_cmd(),
             Worklog { cmd } => cmd.match_cmd(),
         }?;
-        Ok(upcoming)
+        Ok((opt2, upcoming))
     }
 }

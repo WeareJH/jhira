@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use failure::Error;
+
 use chrono::{Date, Utc};
 
 #[derive(Debug)]
@@ -10,13 +10,13 @@ pub struct DateRange {
 #[derive(Fail, Debug)]
 pub enum DateRangeError {
     #[fail(display = "nah nah nah {}", _0)]
-    Nope(String)
+    Nope(String),
 }
 
 impl FromStr for DateRange {
     type Err = DateRangeError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(_s: &str) -> Result<Self, Self::Err> {
         Ok(DateRange { dates: vec![] })
     }
 }

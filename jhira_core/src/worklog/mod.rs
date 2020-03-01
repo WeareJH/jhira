@@ -1,8 +1,8 @@
+use crate::async_task::AsyncTask;
+use crate::worklog::date_range::DateRange;
+use async_trait::async_trait;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
-use crate::worklog::date_range::DateRange;
-use crate::task::Task;
-use async_trait::async_trait;
 
 mod date_range;
 
@@ -13,7 +13,7 @@ pub enum Worklog {
     #[structopt(name = "ls")]
     Ls {
         /// which day/days to fetch, eg: 'today', 'yesterday', '3' or '2019-10-29'
-        #[structopt(default_value = "1", )]
+        #[structopt(default_value = "1")]
         range: DateRange,
         /// Filters to apply
         #[structopt(short)]
@@ -34,17 +34,17 @@ pub enum Worklog {
         time: Option<String>,
         /// A comment for the log, eg: 'overtime'
         #[structopt(short)]
-        comment: Option<String>
+        comment: Option<String>,
     },
 }
 
 impl Worklog {
-    pub fn match_cmd(&self) -> Result<Vec<Box<dyn Task>>, failure::Error> {
+    pub fn match_cmd(&self) -> Result<Vec<Box<dyn AsyncTask>>, failure::Error> {
         use Worklog::*;
         match self {
-            Ls { range, filters } => {
+            Ls { range, .. } => {
                 println!("worklog ls {:#?}", range);
-            },
+            }
             Create { .. } => {
                 println!("worklog create!");
             }
@@ -53,8 +53,7 @@ impl Worklog {
     }
 }
 
-
 struct Wl;
 
 #[async_trait(?Send)]
-impl Task for Wl {}
+impl AsyncTask for Wl {}

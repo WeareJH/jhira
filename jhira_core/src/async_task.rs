@@ -1,21 +1,20 @@
-use crate::async_task::{AsyncTask, TaskOutput};
-
 use async_trait::async_trait;
 
-pub mod cmd;
-
 #[derive(Debug)]
-pub struct Issues {
-    pub url: String,
+pub enum TaskOutput {
+    Chain(Vec<TaskOutput>),
+    String(Vec<String>),
+    Done,
+    DryRun,
 }
 
 #[async_trait(?Send)]
-impl AsyncTask for Issues {
+pub trait AsyncTask {
     async fn exec(&self) -> Result<TaskOutput, failure::Error> {
-        Ok(TaskOutput::String(vec![String::from("Output")]))
+        println!("Missing impl for AsyncTask::exec");
+        Ok(TaskOutput::Done)
     }
     async fn dry_run(&self) -> Result<TaskOutput, failure::Error> {
-        println!("{:#?}", self);
         Ok(TaskOutput::DryRun)
     }
 }
