@@ -1,6 +1,8 @@
 use crate::issues::Issues;
 use crate::worklog::Worklog;
 use structopt::StructOpt;
+use std::future::Future;
+use crate::task::Task;
 
 #[derive(Debug)]
 pub struct Jhira {
@@ -38,14 +40,14 @@ pub enum CliError {
 }
 
 impl Jhira {
-    pub async fn from_args(args: Vec<String>) -> Result<Jhira, failure::Error> {
+    pub fn from_args(args: Vec<String>) -> Result<Vec<Box<dyn Task>>, failure::Error> {
         let strs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
         let opt: Args = Args::from_iter(strs);
         use Subcommands::*;
         let upcoming = match opt.cmd {
             Issues { cmd } => cmd.match_cmd(),
             Worklog { cmd } => cmd.match_cmd(),
-        };
-        Ok(Jhira { args })
+        }?;
+        Ok(upcoming)
     }
 }

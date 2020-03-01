@@ -1,4 +1,7 @@
 use tokio::prelude::*;
+use jhira_core::task::{Task, TaskOutput};
+use futures::{future, stream, StreamExt};
+use jhira_core::http::Http;
 
 ///
 /// Examples
@@ -9,6 +12,9 @@ use tokio::prelude::*;
 #[tokio::main]
 async fn main() -> Result<(), failure::Error> {
     let args = std::env::args().collect::<Vec<String>>();
-    let _jhira = jhira_core::Jhira::from_args(args.into_iter().collect()).await;
+    let tasks = jhira_core::Jhira::from_args(args.into_iter().collect())?;
+    for t in tasks {
+        t.dry_run().await;
+    };
     Ok(())
 }

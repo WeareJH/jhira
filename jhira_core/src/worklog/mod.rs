@@ -1,6 +1,8 @@
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 use crate::worklog::date_range::DateRange;
+use crate::task::Task;
+use async_trait::async_trait;
 
 mod date_range;
 
@@ -37,7 +39,7 @@ pub enum Worklog {
 }
 
 impl Worklog {
-    pub fn match_cmd(&self) -> Result<(), failure::Error> {
+    pub fn match_cmd(&self) -> Result<Vec<Box<dyn Task>>, failure::Error> {
         use Worklog::*;
         match self {
             Ls { range, filters } => {
@@ -47,6 +49,12 @@ impl Worklog {
                 println!("worklog create!");
             }
         };
-        Ok(())
+        Ok(vec![Box::new(Wl)])
     }
 }
+
+
+struct Wl;
+
+#[async_trait(?Send)]
+impl Task for Wl {}
