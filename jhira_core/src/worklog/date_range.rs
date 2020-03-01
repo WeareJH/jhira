@@ -17,7 +17,7 @@ impl FromStr for DateRange {
     type Err = DateRangeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(DateRange{dates: vec![]})
+        Ok(DateRange { dates: vec![] })
     }
 }
 

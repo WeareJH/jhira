@@ -22,7 +22,7 @@ enum Subcommands {
         #[structopt(subcommand)]
         cmd: Issues,
     },
-    #[structopt(name = "worklog")]
+    #[structopt(name = "worklog", alias="wl")]
     Worklog {
         #[structopt(subcommand)]
         cmd: Worklog,
@@ -38,7 +38,7 @@ pub enum CliError {
 }
 
 impl Jhira {
-    pub fn from_args(args: Vec<String>) -> Result<Jhira, failure::Error> {
+    pub async fn from_args(args: Vec<String>) -> Result<Jhira, failure::Error> {
         let strs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
         let opt: Args = Args::from_iter(strs);
         use Subcommands::*;
@@ -46,7 +46,6 @@ impl Jhira {
             Issues { cmd } => cmd.match_cmd(),
             Worklog { cmd } => cmd.match_cmd(),
         };
-        dbg!(upcoming);
         Ok(Jhira { args })
     }
 }
