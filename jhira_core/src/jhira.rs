@@ -2,6 +2,8 @@ use crate::worklog::Worklog;
 use structopt::StructOpt;
 
 use crate::async_task::AsyncTask;
+use crate::auth::Auth;
+use crate::context::Context;
 use crate::issues::cmd::IssuesCmd;
 
 #[derive(Debug)]
@@ -46,10 +48,12 @@ impl Jhira {
         let strs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
         let opt: Args = Args::from_iter(&strs);
         let opt2: Args = Args::from_iter(&strs);
+        let a = Auth::from_file()?;
+        let context = Context { auth: a };
         use Subcommands::*;
         let upcoming = match opt.cmd {
-            Issues { cmd } => cmd.match_cmd(),
-            Worklog { cmd } => cmd.match_cmd(),
+            Issues { cmd } => cmd.match_cmd(&context),
+            Worklog { cmd } => cmd.match_cmd(&context),
         }?;
         Ok((opt2, upcoming))
     }
