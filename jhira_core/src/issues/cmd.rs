@@ -18,9 +18,11 @@ impl IssuesCmd {
         use IssuesCmd::*;
         match self {
             Ls => {
-                dbg!(&context);
+                let a = context.auth.clone();
+                let issue_url = format!("https://{}.atlassian.net/rest/api/2/myself", a.domain);
                 let t1 = Issues {
-                    url: String::from("https://httpbin.org/get"),
+                    url: issue_url,
+                    auth: a,
                 };
                 Ok(vec![Box::new(t1)])
             }
