@@ -18,9 +18,8 @@ enum IssuesDisplayError {
 impl AsyncTask for IssuesDisplay {
     async fn exec(&self) -> Result<TaskOutput, failure::Error> {
         let resp = self.resp.lock().unwrap();
-        let c = resp.clone().ok_or(IssuesDisplayError::Missing)?;
-        let d = JiraIssues::from_str(&c)?;
-        dbg!(d);
+        let resp_string = resp.clone().ok_or(IssuesDisplayError::Missing)?;
+        let _parsed_issues = JiraIssues::from_str(&resp_string)?;
         Ok(TaskOutput::Done)
     }
 }
