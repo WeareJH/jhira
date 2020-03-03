@@ -9,6 +9,8 @@ pub mod async_task;
 pub mod auth;
 pub mod context;
 pub mod http;
+pub mod http_get;
+pub mod http_jql;
 pub mod issues;
 pub mod jhira;
 pub mod task;

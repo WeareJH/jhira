@@ -36,8 +36,8 @@ fn handle_output(t: TaskOutput) {
         TaskOutput::DryRun => {
             // println!("dryrun");
         }
-        _ => {
-            unimplemented!();
+        TaskOutput::Done => {
+            // println!("done");
         }
     }
 }

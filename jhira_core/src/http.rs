@@ -1,33 +1,17 @@
-use crate::auth::Auth;
-use reqwest::header::AUTHORIZATION;
+use crate::context::Context;
+use async_trait::async_trait;
+
+use crate::http_get::HttpGet;
+use crate::http_jql::HttpJql;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub enum Http {
     Get(HttpGet),
+    Jql(HttpJql),
 }
 
-#[derive(Debug)]
-pub struct HttpGet {
-    pub url: String,
-}
-
-impl HttpGet {
-    pub async fn exec(&self, auth: &Auth) -> Result<String, failure::Error> {
-        let client = reqwest::Client::builder().build()?;
-
-        let res: reqwest::Response = client
-            .get(&self.url)
-            .header(AUTHORIZATION, auth.basic())
-            .send()
-            .await?;
-
-        let output = match res.error_for_status() {
-            Ok(res) => {
-                Ok(res.text().await?)
-            }
-            Err(err) => Err(err)
-        }?;
-
-        Ok(output)
-    }
+#[async_trait(?Send)]
+pub trait HttpString {
+    async fn exec(&self, context: Arc<Context>) -> Result<String, failure::Error>;
 }

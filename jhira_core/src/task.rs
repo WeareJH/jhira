@@ -47,36 +47,19 @@ async fn dry_run(task: &Task) -> Result<TaskOutput, failure::Error> {
 #[cfg(test)]
 mod test {
     use crate::async_task::AsyncTask;
-    use crate::issues::Issues;
+    use crate::context::Context;
+    use crate::issues::issues_fetch::IssuesFetch;
     use crate::task::Task;
+    use std::sync::Arc;
 
     #[tokio::main]
     #[test]
     async fn test_task() -> Result<(), failure::Error> {
-        let t1 = Task::Once(Box::new(Issues {
-            url: String::from("yoyo 1"),
-        }));
-        let t2 = Task::Once(Box::new(Issues {
-            url: String::from("yoyo 2"),
-        }));
-        let t3 = Task::Once(Box::new(Issues {
-            url: String::from("yoyo 3"),
-        }));
+        let c = Arc::new(Context::default());
+        let t1 = Task::Once(Box::new(IssuesFetch::new(c.clone())));
+        let t2 = Task::Once(Box::new(IssuesFetch::new(c.clone())));
 
-        let t4 = Task::Once(Box::new(Issues {
-            url: String::from("yoyo 4"),
-        }));
-        let t5 = Task::Once(Box::new(Issues {
-            url: String::from("yoyo 5"),
-        }));
-        let t6 = Task::Once(Box::new(Issues {
-            url: String::from("yoyo 6"),
-        }));
-        let t7 = Task::Once(Box::new(Issues {
-            url: String::from("yoyo 7"),
-        }));
-
-        let all_tasks = Task::Chain(vec![t1, t2, t3, Task::Chain(vec![t4, t5, t6, t7])]);
+        let all_tasks = Task::Chain(vec![t1, Task::Chain(vec![t2])]);
 
         let _output = all_tasks.dry_run().await;
 

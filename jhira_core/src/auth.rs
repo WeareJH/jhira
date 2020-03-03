@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
 pub struct Auth {
     pub domain: String,
     pub email: String,

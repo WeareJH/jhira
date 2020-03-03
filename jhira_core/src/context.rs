@@ -1,6 +1,6 @@
 use crate::auth::Auth;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Context {
     pub auth: Auth,
 }

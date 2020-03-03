@@ -2,6 +2,7 @@ use crate::async_task::AsyncTask;
 use crate::context::Context;
 use crate::worklog::date_range::DateRange;
 use async_trait::async_trait;
+use std::sync::Arc;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
@@ -40,7 +41,10 @@ pub enum Worklog {
 }
 
 impl Worklog {
-    pub fn match_cmd(&self, _context: &Context) -> Result<Vec<Box<dyn AsyncTask>>, failure::Error> {
+    pub fn match_cmd(
+        &self,
+        _context: Arc<Context>,
+    ) -> Result<Vec<Box<dyn AsyncTask>>, failure::Error> {
         use Worklog::*;
         match self {
             Ls { range, .. } => {
