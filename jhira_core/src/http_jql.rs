@@ -5,18 +5,25 @@ use reqwest::header::AUTHORIZATION;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HttpJql {
     pub jql: String,
-    pub max_results: usize,
+    pub max_results: u16,
 }
 
 impl HttpJql {
     pub fn new(jql: impl Into<String>) -> HttpJql {
         HttpJql {
             jql: jql.into(),
-            max_results: 200,
+            max_results: 200u16,
         }
+    }
+    pub fn max_results(&mut self, max_results: u16) -> &mut Self {
+        self.max_results = max_results;
+        self
+    }
+    pub fn build(&mut self) -> HttpJql {
+        HttpJql { ..self.clone() }
     }
 }
 

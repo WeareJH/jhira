@@ -22,6 +22,8 @@ impl IssuesFetch {
 impl AsyncTask for IssuesFetch {
     async fn exec(&self) -> Result<TaskOutput, failure::Error> {
         let resp = HttpJql::new("assignee = currentUser()")
+            .max_results(2)
+            .build()
             .exec(self.context.clone())
             .await?;
         let mut l = self.resp.lock().unwrap();

@@ -20,3 +20,4 @@ futures = "0.3.4"
 tokio = { version = "0.2.13", features = ["full"] }
 dirs = "2.0.2"
 base64 = "0.11.0"
+prettytable-rs = "0.8.0"

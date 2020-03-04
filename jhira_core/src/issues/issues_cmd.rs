@@ -23,9 +23,10 @@ impl IssuesCmd {
         use IssuesCmd::*;
         match self {
             Ls => {
-                let fetch = IssuesFetch::new(context);
+                let fetch = IssuesFetch::new(context.clone());
                 let display = IssuesDisplay {
                     resp: fetch.resp.clone(),
+                    context: context.clone(),
                 };
                 Ok(vec![Box::new(fetch), Box::new(display)])
             }
