@@ -32,8 +32,8 @@ impl AsyncTask for IssuesDisplay {
 fn display(issues: JiraIssues, context: &Context) -> String {
     let mut table = Table::new();
     table.set_format(*format::consts::FORMAT_CLEAN);
-    for i in issues.issues {
-        table.add_row(row![IssueLink::from_context(&context, &i.key), "summary"]);
+    for (i, v) in issues.issues.iter().enumerate() {
+        table.add_row(row![i, IssueLink::from_context(&context, &v.key), "summary"]);
     }
     let s = table.to_string();
     s
