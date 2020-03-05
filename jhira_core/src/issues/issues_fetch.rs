@@ -50,10 +50,10 @@ impl AsyncTask for IssuesFetch {
 #[tokio::main]
 #[test]
 async fn test_issues_from_ctx() -> Result<(), failure::Error> {
-    // let a = Auth::from_file()?;
-    // let context = Arc::new(Context { auth: a });
-    // let issues: IssuesFetch = context.into();
-    // let resp = issues.fetch().await?;
-    // println!("resp={}", resp);
+    let a = Auth::from_file()?;
+    let context = Arc::new(Context { auth: a });
+    let issues: IssuesFetch = context.into();
+    let resp = issues.fetch().await?;
+    println!("resp={}", resp);
     Ok(())
 }

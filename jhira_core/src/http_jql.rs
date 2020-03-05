@@ -33,24 +33,28 @@ impl HttpString for HttpJql {
         let client = reqwest::Client::new();
 
         let url = format!(
-            "https://{}.atlassian.net/rest/api/2/search?fields=-issuetype",
+            "https://{}.atlassian.net/rest/api/3/search",
             context.auth.domain
         );
 
-        let mut map = HashMap::new();
-        map.insert("jql", self.jql.clone());
-        map.insert("maxResults", self.max_results.to_string());
+        let j = serde_json::json!({
+            "jql": self.jql.clone(),
+            "maxResults": self.max_results.to_string(),
+            "validateQuery": true,
+        });
 
         let res = client
             .post(&url)
-            .json(&map)
+            .json(&j)
             .header(AUTHORIZATION, context.auth.basic())
             .send()
             .await?;
 
         let output = match res.error_for_status() {
             Ok(res) => Ok(res.text().await?),
-            Err(err) => Err(err),
+            Err(err) => {
+                Err(err)
+            },
         }?;
 
         Ok(output)
