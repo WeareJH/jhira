@@ -3,6 +3,7 @@ use std::str::FromStr;
 #[derive(Deserialize, Debug)]
 pub struct JiraIssues {
     pub issues: Vec<JiraIssue>,
+    pub total: u16,
 }
 
 impl FromStr for JiraIssues {
@@ -16,6 +17,24 @@ impl FromStr for JiraIssues {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct JiraIssue {
-    // pub fields: JiraField,
+    pub fields: JiraFields,
     pub key: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct JiraFields {
+    pub issuetype: IssueType,
+    pub status: IssueType,
+    pub subtasks: Option<Vec<JiraIssue>>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct IssueType {
+    pub name: String,
+    pub subtask: Option<bool>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct IssueStatus {
+    name: String,
 }

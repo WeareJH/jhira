@@ -2,7 +2,7 @@ use crate::context::Context;
 use crate::http::HttpString;
 use async_trait::async_trait;
 use reqwest::header::AUTHORIZATION;
-use std::collections::HashMap;
+
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
@@ -52,9 +52,7 @@ impl HttpString for HttpJql {
 
         let output = match res.error_for_status() {
             Ok(res) => Ok(res.text().await?),
-            Err(err) => {
-                Err(err)
-            },
+            Err(err) => Err(err),
         }?;
 
         Ok(output)

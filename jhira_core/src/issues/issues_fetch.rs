@@ -4,7 +4,9 @@ use crate::http::HttpString;
 use crate::http_jql::HttpJql;
 use async_trait::async_trait;
 use std::sync::{Arc, Mutex};
-use crate::auth::Auth;
+
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct IssuesFetch {
@@ -18,11 +20,13 @@ impl IssuesFetch {
         IssuesFetch { context, resp }
     }
     async fn fetch(&self) -> Result<String, failure::Error> {
-        let resp = HttpJql::new("assignee = currentUser()")
-            .max_results(100)
-            .build()
-            .exec(self.context.clone())
-            .await?;
+        let resp =
+            HttpJql::new("assignee = currentUser() and status not in (Validated) order by updated")
+                // let resp = HttpJql::new("project = smpb")
+                .max_results(100)
+                .build()
+                .exec(self.context.clone())
+                .await?;
         Ok(resp)
     }
 }
@@ -37,6 +41,7 @@ impl From<Arc<Context>> for IssuesFetch {
 impl AsyncTask for IssuesFetch {
     async fn exec(&self) -> Result<TaskOutput, failure::Error> {
         let resp = self.fetch().await?;
+        // fs::write(PathBuf::from("out.json"), &resp);
         let mut l = self.resp.lock().unwrap();
         *l = Some(resp);
         Ok(TaskOutput::Done)
@@ -50,6 +55,7 @@ impl AsyncTask for IssuesFetch {
 #[tokio::main]
 #[test]
 async fn test_issues_from_ctx() -> Result<(), failure::Error> {
+    use crate::auth::Auth;
     let a = Auth::from_file()?;
     let context = Arc::new(Context { auth: a });
     let issues: IssuesFetch = context.into();
