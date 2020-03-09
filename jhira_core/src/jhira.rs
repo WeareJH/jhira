@@ -45,10 +45,12 @@ pub enum CliError {
 }
 
 impl Jhira {
-    pub fn from_args(args: Vec<String>) -> Result<(Args, Vec<Box<dyn AsyncTask>>), failure::Error> {
-        let strs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-        let opt: Args = Args::from_iter(&strs);
-        let opt2: Args = Args::from_iter(&strs);
+    pub fn from_args(
+        args: impl Iterator<Item = String>,
+    ) -> Result<(Args, Vec<Box<dyn AsyncTask>>), failure::Error> {
+        let c = args.collect::<Vec<String>>();
+        let opt: Args = Args::from_iter(&c);
+        let opt2: Args = Args::from_iter(&c);
         let a = Auth::from_file()?;
         let context = Arc::new(Context { auth: a });
         use Subcommands::*;
@@ -58,4 +60,14 @@ impl Jhira {
         }?;
         Ok((opt2, upcoming))
     }
+}
+
+#[test]
+fn test_jhira() -> Result<(), failure::Error> {
+    let args = vec!["jira", "issues", "ls", "--kind", "bug", "epic"]
+        .into_iter()
+        .map(String::from);
+    let (args, _tasks) = Jhira::from_args(args)?;
+    dbg!(args);
+    Ok(())
 }

@@ -12,7 +12,13 @@ use std::sync::Arc;
 pub enum IssuesCmd {
     /// List issues assigned to you
     #[structopt(name = "ls")]
-    Ls,
+    List {
+        #[structopt(short = "k", long = "kind")]
+        kind: Option<Vec<String>>,
+
+        #[structopt(long = "max")]
+        max: Option<u16>,
+    },
 }
 
 impl IssuesCmd {
@@ -20,13 +26,14 @@ impl IssuesCmd {
         &self,
         context: Arc<Context>,
     ) -> Result<Vec<Box<dyn AsyncTask>>, failure::Error> {
-        use IssuesCmd::*;
         match self {
-            Ls => {
-                let fetch = IssuesFetch::new(context.clone());
+            IssuesCmd::List { kind, max } => {
+                let mut fetch = IssuesFetch::new(context.clone());
+                fetch.kind = kind.clone();
+                fetch.max = max.clone();
                 let display = IssuesDisplay {
                     resp: fetch.resp.clone(),
-                    context: context.clone(),
+                    context,
                 };
                 Ok(vec![Box::new(fetch), Box::new(display)])
             }

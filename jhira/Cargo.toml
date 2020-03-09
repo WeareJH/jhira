@@ -11,3 +11,4 @@ jhira_core = { path = "../jhira_core", version = "0.1.0" }
 tokio = { version = "0.2.13", features = ["full"] }
 failure = "0.1.6"
 futures = "0.3.4"
+log = "0.4.8"
