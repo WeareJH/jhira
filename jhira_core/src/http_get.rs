@@ -11,7 +11,7 @@ pub struct HttpGet {
 
 #[async_trait(?Send)]
 impl HttpString for HttpGet {
-    async fn exec(&self, context: Arc<Context>) -> Result<String, failure::Error> {
+    async fn exec_http(&self, context: Arc<Context>) -> Result<String, failure::Error> {
         let client = reqwest::Client::builder().build()?;
 
         let res: reqwest::Response = client

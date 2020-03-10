@@ -10,6 +10,8 @@ pub struct IssuesFetch {
     pub context: Arc<Context>,
     pub resp: Arc<Mutex<Option<String>>>,
 
+    pub id: Option<Vec<String>>,
+
     pub project: Option<Vec<String>>,
 
     pub kind: Option<Vec<String>>,
@@ -42,6 +44,16 @@ impl IssuesFetch {
             }
         }
         Some(String::from("assignee = currentUser()"))
+    }
+    ///
+    /// Should the issue list be filtered by the issue id?
+    ///
+    /// eg: `issues ls --id abc-123`
+    ///
+    pub fn jql_id(&self) -> Option<String> {
+        self.id
+            .as_ref()
+            .map(|ids| format!("issue in ({})", ids.join(",")))
     }
     ///
     /// Should the issue list be sorted by updated time?
@@ -114,7 +126,7 @@ impl IssuesFetch {
 
         debug!("{:#?}", jql);
 
-        let resp = req.exec(self.context.clone()).await?;
+        let resp = req.exec_http(self.context.clone()).await?;
         Ok(resp)
     }
 }
@@ -129,6 +141,7 @@ impl From<&IssuesFetch> for HttpJql {
     fn from(fetch: &IssuesFetch) -> Self {
         let and_items: String = vec![
             fetch.jql_assignee(),
+            fetch.jql_id(),
             fetch.jql_project(),
             fetch.jql_kind(),
             fetch.jql_not_kind(),

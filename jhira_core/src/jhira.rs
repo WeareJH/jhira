@@ -4,8 +4,11 @@ use structopt::StructOpt;
 use crate::async_task::AsyncTask;
 use crate::auth::Auth;
 use crate::context::Context;
+use crate::http_jql::HttpJql;
 use crate::issues::issues_cmd::IssuesCmd;
 use std::sync::Arc;
+
+use crate::jql::JqlCmd;
 
 #[derive(Debug)]
 pub struct Jhira {
@@ -40,6 +43,14 @@ pub enum Subcommands {
         #[structopt(subcommand)]
         cmd: IssuesCmd,
     },
+    #[structopt(name = "jql")]
+    Jql {
+        jql: HttpJql,
+        #[structopt(long = "max")]
+        max: Option<u16>,
+        #[structopt(long = "fields")]
+        fields: Option<Vec<String>>,
+    },
     #[structopt(name = "worklog", alias = "wl")]
     Worklog {
         #[structopt(subcommand)]
@@ -71,6 +82,15 @@ impl Jhira {
             Worklog { cmd } => {
                 let context: Context = Auth::from_file()?.into();
                 cmd.match_cmd(Arc::new(context))
+            }
+            Jql {
+                mut jql,
+                max,
+                fields,
+            } => {
+                let context: Context = Auth::from_file()?.into();
+                let jql_http = jql.max_opt(max).fields_opt(fields).build();
+                JqlCmd::new(jql_http, Arc::new(context)).into()
             }
             Login { api, domain, email } => {
                 let auth = Auth { api, domain, email };

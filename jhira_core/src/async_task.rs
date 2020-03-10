@@ -10,9 +10,15 @@ pub enum TaskOutput {
     DryRun,
 }
 
+impl TaskOutput {
+    pub fn string(s: impl Into<String>) -> TaskOutput {
+        TaskOutput::String(vec![s.into()])
+    }
+}
+
 #[async_trait(?Send)]
 pub trait AsyncTask {
-    async fn exec(&self) -> Result<TaskOutput, failure::Error> {
+    async fn exec(&self) -> Return {
         println!("Missing impl for AsyncTask::exec");
         Ok(TaskOutput::Done)
     }

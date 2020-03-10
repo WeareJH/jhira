@@ -18,6 +18,7 @@ pub mod http_get;
 pub mod http_jql;
 pub mod issues;
 pub mod jhira;
+pub mod jql;
 pub mod login;
 pub mod task;
 pub mod worklog;

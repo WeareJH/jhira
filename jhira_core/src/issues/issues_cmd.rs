@@ -13,6 +13,10 @@ pub enum IssuesCmd {
     /// List issues assigned to you
     #[structopt(name = "ls")]
     List {
+        /// Which issue ids to fetch
+        #[structopt(long = "id")]
+        id: Option<Vec<String>>,
+
         /// Which projects to fetch issues for. eg: 'abc'
         #[structopt(long = "project")]
         project: Option<Vec<String>>,
@@ -52,6 +56,7 @@ impl IssuesCmd {
                 not_kind,
                 status,
                 not_status,
+                id,
             } => {
                 let mut fetch = IssuesFetch::new(context.clone());
 
@@ -60,6 +65,7 @@ impl IssuesCmd {
                 fetch.status = status.clone();
                 fetch.not_status = not_status.clone();
                 fetch.project = project.clone();
+                fetch.id = id.clone();
 
                 fetch.max = *max;
 

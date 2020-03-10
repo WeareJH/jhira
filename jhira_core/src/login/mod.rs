@@ -23,7 +23,7 @@ impl AsyncTask for LoginVerify {
             ),
         };
         let _resp = http
-            .exec(Arc::new(ctx))
+            .exec_http(Arc::new(ctx))
             .await
             .map_err(|e| AuthError::CouldNotVerify(e.to_string()))?;
         debug!("Auth all good");

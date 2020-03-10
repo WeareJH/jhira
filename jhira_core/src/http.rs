@@ -13,5 +13,5 @@ pub enum Http {
 
 #[async_trait(?Send)]
 pub trait HttpString {
-    async fn exec(&self, context: Arc<Context>) -> Result<String, failure::Error>;
+    async fn exec_http(&self, context: Arc<Context>) -> Result<String, failure::Error>;
 }
