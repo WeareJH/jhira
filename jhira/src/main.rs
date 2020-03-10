@@ -10,6 +10,16 @@ use jhira_core::async_task::TaskOutput;
 async fn main() -> Result<(), failure::Error> {
     env_logger::init();
     let args = std::env::args().collect::<Vec<String>>();
+    match run(args).await {
+        Ok(..) => {
+            // do nothing if all good!
+        }
+        Err(e) => eprintln!("{}", e.to_string()),
+    };
+    Ok(())
+}
+
+async fn run(args: Vec<String>) -> Result<(), failure::Error> {
     let (opt, tasks) = jhira_core::Jhira::from_args(args.into_iter())?;
     for t in tasks {
         let task_output = if opt.dry_run {

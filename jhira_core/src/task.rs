@@ -1,6 +1,8 @@
 use crate::async_task::{AsyncTask, TaskOutput};
 use async_trait::async_trait;
 
+pub type TaskSequence = Result<Vec<Box<dyn AsyncTask>>, failure::Error>;
+
 pub enum Task {
     Once(Box<dyn AsyncTask>),
     Chain(Vec<Task>),

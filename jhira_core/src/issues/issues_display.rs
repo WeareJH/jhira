@@ -69,6 +69,7 @@ fn summary_table(issues: &JiraIssues) -> String {
     let mut table = Table::new();
     table.set_format(*format::consts::FORMAT_CLEAN);
     table.add_row(row!["total", issues.total]);
+    table.add_row(row!["shown", issues.issues.len()]);
     table.to_string()
 }
 

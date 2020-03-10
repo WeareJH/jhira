@@ -1,5 +1,7 @@
 use async_trait::async_trait;
 
+pub type Return = Result<TaskOutput, failure::Error>;
+
 #[derive(Debug)]
 pub enum TaskOutput {
     Chain(Vec<TaskOutput>),

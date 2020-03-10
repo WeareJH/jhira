@@ -24,6 +24,17 @@ pub struct Args {
 
 #[derive(StructOpt, Debug)]
 pub enum Subcommands {
+    #[structopt(name = "login")]
+    Login {
+        #[structopt(long = "domain")]
+        domain: String,
+
+        #[structopt(long = "api")]
+        api: String,
+
+        #[structopt(long = "email")]
+        email: String,
+    },
     #[structopt(name = "issues")]
     Issues {
         #[structopt(subcommand)]
@@ -51,12 +62,20 @@ impl Jhira {
         let c = args.collect::<Vec<String>>();
         let opt: Args = Args::from_iter(&c);
         let opt2: Args = Args::from_iter(&c);
-        let a = Auth::from_file()?;
-        let context = Arc::new(Context { auth: a });
         use Subcommands::*;
         let upcoming = match opt.cmd {
-            Issues { cmd } => cmd.match_cmd(context),
-            Worklog { cmd } => cmd.match_cmd(context),
+            Issues { cmd } => {
+                let context: Context = Auth::from_file()?.into();
+                cmd.match_cmd(Arc::new(context))
+            }
+            Worklog { cmd } => {
+                let context: Context = Auth::from_file()?.into();
+                cmd.match_cmd(Arc::new(context))
+            }
+            Login { api, domain, email } => {
+                let auth = Auth { api, domain, email };
+                auth.login()
+            }
         }?;
         Ok((opt2, upcoming))
     }
