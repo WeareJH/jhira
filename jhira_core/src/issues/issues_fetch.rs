@@ -10,7 +10,14 @@ pub struct IssuesFetch {
     pub context: Arc<Context>,
     pub resp: Arc<Mutex<Option<String>>>,
 
+    pub project: Option<Vec<String>>,
+
     pub kind: Option<Vec<String>>,
+    pub not_kind: Option<Vec<String>>,
+
+    pub status: Option<Vec<String>>,
+    pub not_status: Option<Vec<String>>,
+
     pub max: Option<u16>,
 }
 
@@ -37,12 +44,6 @@ impl IssuesFetch {
         Some(String::from("assignee = currentUser()"))
     }
     ///
-    /// Should the issue list be filtered by status?
-    ///
-    pub fn jql_status(&self) -> Option<String> {
-        Some(String::from("status not in (Validated)"))
-    }
-    ///
     /// Should the issue list be sorted by updated time?
     ///
     pub fn jql_order(&self) -> Option<String> {
@@ -53,10 +54,55 @@ impl IssuesFetch {
     ///
     /// eg: `issues ls --kind epic`
     ///
-    pub fn jql_issuetype(&self) -> Option<String> {
+    pub fn jql_kind(&self) -> Option<String> {
         self.kind
             .as_ref()
             .map(|kinds| format!("issuetype in ({})", kinds.join(",")))
+    }
+    ///
+    /// Should the issue list be filtered by the issue type?
+    ///
+    /// eg: `issues ls --kind epic`
+    ///
+    pub fn jql_not_kind(&self) -> Option<String> {
+        self.not_kind
+            .as_ref()
+            .map(|kinds| format!("issuetype not in ({})", kinds.join(",")))
+    }
+    ///
+    /// Should the issue list be filtered by the status type
+    ///
+    /// eg: `issues ls --status 'refinement'`
+    ///
+    pub fn jql_status(&self) -> Option<String> {
+        self.status.as_ref().map(|kinds| {
+            let kinds = kinds
+                .iter()
+                .map(|k| format!(r#""{}""#, k))
+                .collect::<Vec<String>>()
+                .join(",");
+            format!("status in ({})", kinds)
+        })
+    }
+    ///
+    /// Should the issue list be filtered by the issue type?
+    ///
+    /// eg: `issues ls --kind epic`
+    ///
+    pub fn jql_not_status(&self) -> Option<String> {
+        self.not_status
+            .as_ref()
+            .map(|kinds| format!("status not in ({})", kinds.join(",")))
+    }
+    ///
+    /// Should the issue list be filtered by the project
+    ///
+    /// eg: `issues ls --kind epic`
+    ///
+    pub fn jql_project(&self) -> Option<String> {
+        self.project
+            .as_ref()
+            .map(|project| format!("project in ({})", project.join(",")))
     }
     ///
     /// Perform the actual fetch by converting this type into
@@ -64,12 +110,11 @@ impl IssuesFetch {
     ///
     async fn fetch(&self) -> Result<String, failure::Error> {
         let mut jql: HttpJql = self.into();
-        dbg!(&jql);
-        let resp = jql
-            .max_results(self.max.unwrap_or(100))
-            .build()
-            .exec(self.context.clone())
-            .await?;
+        let req = jql.max_results(self.max.unwrap_or(100)).build();
+
+        debug!("{:#?}", jql);
+
+        let resp = req.exec(self.context.clone()).await?;
         Ok(resp)
     }
 }
@@ -84,8 +129,11 @@ impl From<&IssuesFetch> for HttpJql {
     fn from(fetch: &IssuesFetch) -> Self {
         let and_items: String = vec![
             fetch.jql_assignee(),
-            fetch.jql_issuetype(),
+            fetch.jql_project(),
+            fetch.jql_kind(),
+            fetch.jql_not_kind(),
             fetch.jql_status(),
+            fetch.jql_not_status(),
         ]
         .into_iter()
         .filter_map(|f| f)

@@ -1,9 +1,7 @@
-#[macro_use] extern crate log;
-
-use log::Level;
+#[macro_use]
+extern crate log;
 
 use jhira_core::async_task::TaskOutput;
-
 
 ///
 /// Examples
@@ -13,6 +11,7 @@ use jhira_core::async_task::TaskOutput;
 /// ```
 #[tokio::main]
 async fn main() -> Result<(), failure::Error> {
+    env_logger::init();
     let args = std::env::args().collect::<Vec<String>>();
     let (opt, tasks) = jhira_core::Jhira::from_args(args.into_iter())?;
     for t in tasks {
