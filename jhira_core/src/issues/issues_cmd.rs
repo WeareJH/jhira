@@ -14,6 +14,10 @@ pub enum IssuesCmd {
     #[structopt(name = "ls")]
     List {
         /// Which issue ids to fetch
+        #[structopt(long = "verbose", short = "v")]
+        verbose: bool,
+
+        /// Which issue ids to fetch
         #[structopt(long = "id")]
         id: Option<Vec<String>>,
 
@@ -57,6 +61,7 @@ impl IssuesCmd {
                 status,
                 not_status,
                 id,
+                verbose,
             } => {
                 let mut fetch = IssuesFetch::new(context.clone());
 
@@ -72,6 +77,7 @@ impl IssuesCmd {
                 let display = IssuesDisplay {
                     resp: fetch.resp.clone(),
                     context,
+                    verbose: *verbose,
                 };
                 Ok(vec![Box::new(fetch), Box::new(display)])
             }

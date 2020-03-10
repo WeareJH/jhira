@@ -6,11 +6,21 @@ use crate::task::TaskSequence;
 
 use crate::login::{LoginVerify, LoginWrite};
 
-#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Auth {
     pub domain: String,
     pub email: String,
     pub api: String,
+}
+
+impl Default for Auth {
+    fn default() -> Self {
+        Auth {
+            domain: "example".into(),
+            api: "123456".into(),
+            email: "shane@exampe.com".into(),
+        }
+    }
 }
 
 #[derive(Fail, Debug)]

@@ -1,9 +1,9 @@
 use crate::async_task::{AsyncTask, TaskOutput};
 use crate::context::Context;
 use crate::issues::issues_types::JiraIssues;
+use crate::issues::output_compact::output_compact;
+use crate::issues::output_verbose::output_verbose;
 use async_trait::async_trait;
-use prettytable::format;
-use prettytable::Table;
 use std::fmt;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex};
 pub struct IssuesDisplay {
     pub resp: Arc<Mutex<Option<String>>>,
     pub context: Arc<Context>,
+    pub verbose: bool,
 }
 
 #[derive(Fail, Debug)]
@@ -19,58 +20,19 @@ enum IssuesDisplayError {
     Missing,
 }
 
-#[async_trait(?Send)]
+#[async_trait(? Send)]
 impl AsyncTask for IssuesDisplay {
     async fn exec(&self) -> Result<TaskOutput, failure::Error> {
         let resp = self.resp.lock().unwrap();
         let resp_string = resp.clone().ok_or(IssuesDisplayError::Missing)?;
-        let output = display(JiraIssues::from_str(&resp_string)?, &self.context);
+        let issues = JiraIssues::from_str(&resp_string)?;
+        let output = if self.verbose {
+            output_verbose(issues, &self.context)
+        } else {
+            output_compact(issues, &self.context)
+        };
         Ok(TaskOutput::String(vec![output]))
     }
-}
-
-fn display(issues: JiraIssues, context: &Context) -> String {
-    let mut table = Table::new();
-    table.set_format(*format::consts::FORMAT_CLEAN);
-
-    for v in &issues.issues {
-        let row_1 = &v.fields.issuetype.name;
-        let row_2 = &v.fields.status.name;
-        let row_3 = IssueLink::from_context(&context, &v.key);
-
-        table.add_row(row![
-            row_1, row_2, row_3,
-            // row_4
-        ]);
-
-        if let Some(ref sub) = v.fields.subtasks {
-            let iter = sub.iter().enumerate();
-            let count = iter.len();
-            for (i, v) in iter {
-                let row_1 = &v.fields.issuetype.name;
-                let row_2 = &v.fields.status.name;
-                let is_last = i + 1 == count;
-                let prefix = if is_last { "└─" } else { "├─" };
-                let row_3 = format!("{} {}", prefix, IssueLink::from_context(&context, &v.key));
-                table.add_row(row![
-                    row_1, row_2, row_3,
-                    // row_4
-                ]);
-            }
-        }
-    }
-
-    let issue_table = table.to_string();
-    let summary_table = summary_table(&issues);
-    format!("{}\n{}", issue_table, summary_table)
-}
-
-fn summary_table(issues: &JiraIssues) -> String {
-    let mut table = Table::new();
-    table.set_format(*format::consts::FORMAT_CLEAN);
-    table.add_row(row!["total", issues.total]);
-    table.add_row(row!["shown", issues.issues.len()]);
-    table.to_string()
 }
 
 pub struct IssueLink(pub String);

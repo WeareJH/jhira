@@ -25,6 +25,7 @@ pub struct JiraIssue {
 pub struct JiraFields {
     pub issuetype: IssueType,
     pub status: IssueType,
+    pub summary: Option<String>,
     pub subtasks: Option<Vec<JiraIssue>>,
 }
 
