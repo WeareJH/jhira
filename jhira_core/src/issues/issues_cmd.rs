@@ -13,21 +13,27 @@ pub enum IssuesCmd {
     /// List issues assigned to you
     #[structopt(name = "ls")]
     List {
-        #[structopt(short = "k", long = "kind")]
-        kind: Option<Vec<String>>,
-
+        /// Which projects to fetch issues for. eg: 'abc'
         #[structopt(long = "project")]
         project: Option<Vec<String>>,
 
+        /// Which issue types to show. eg: 'epic' 'bug' 'story'
+        #[structopt(short = "k", long = "kind")]
+        kind: Option<Vec<String>>,
+
+        /// Which issue types to exclude
         #[structopt(long = "not-kind")]
         not_kind: Option<Vec<String>>,
 
+        /// Which statuses to include, eg: 'refinement' 'ready' 'validated'
         #[structopt(long = "status")]
         status: Option<Vec<String>>,
 
+        /// Which statuses to exclude
         #[structopt(long = "not-status")]
         not_status: Option<Vec<String>>,
 
+        /// Max number of results to fetch
         #[structopt(long = "max")]
         max: Option<u16>,
     },
@@ -55,7 +61,7 @@ impl IssuesCmd {
                 fetch.not_status = not_status.clone();
                 fetch.project = project.clone();
 
-                fetch.max = max.clone();
+                fetch.max = *max;
 
                 let display = IssuesDisplay {
                     resp: fetch.resp.clone(),

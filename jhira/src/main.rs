@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate log;
-
 use jhira_core::async_task::TaskOutput;
 
 ///
