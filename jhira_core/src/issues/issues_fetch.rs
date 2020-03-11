@@ -3,6 +3,7 @@ use crate::context::Context;
 use crate::http::HttpString;
 use crate::http_jql::HttpJql;
 use async_trait::async_trait;
+use std::fs;
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Default)]
@@ -167,7 +168,7 @@ impl From<&IssuesFetch> for HttpJql {
 impl AsyncTask for IssuesFetch {
     async fn exec(&self) -> Result<TaskOutput, failure::Error> {
         let resp = self.fetch().await?;
-        // fs::write(PathBuf::from("out.json"), &resp);
+        fs::write(std::path::PathBuf::from("out.json"), &resp);
         let mut l = self.resp.lock().unwrap();
         *l = Some(resp);
         Ok(TaskOutput::Done)

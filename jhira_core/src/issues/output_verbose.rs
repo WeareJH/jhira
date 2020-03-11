@@ -26,6 +26,11 @@ pub fn output_verbose(issues: JiraIssues, context: &Context) -> String {
             "{}, {}",
             issue.fields.issuetype.name, issue.fields.status.name
         )]);
+
+        if let Some(ref _sub) = issue.fields.subtasks {
+            // t1.add_row(row!["--->"]);
+        }
+
         table.add_row(row![t1]);
         table.add_empty_row();
     }
@@ -34,6 +39,7 @@ pub fn output_verbose(issues: JiraIssues, context: &Context) -> String {
 
 #[test]
 fn test_output_verbose() {
+    use crate::auth::Auth;
     let b = include_str!("../../../fixtures/issues-sub-task.json");
     let i: JiraIssues = serde_json::from_str(b).expect("Should deserialize");
     let ctx: Context = Auth::default().into();
