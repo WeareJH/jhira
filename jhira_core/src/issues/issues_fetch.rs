@@ -39,11 +39,18 @@ impl IssuesFetch {
     /// wanting to view epics only, assignee wouldn't work
     ///
     pub fn jql_assignee(&self) -> Option<String> {
+        // If we're looking up any epics, don't limit to assigned
         if let Some(kinds) = &self.kind {
             if kinds.iter().any(|n| n == "epic" || n == "Epic") {
                 return None;
             }
         }
+        // If we've asked for specific IDs, don't limit to assigned
+        if self.id.is_some() {
+            return None;
+        }
+        // if we get here, we are limiting the issue search to
+        // only include those assigned
         Some(String::from("assignee = currentUser()"))
     }
     ///
