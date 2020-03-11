@@ -13,6 +13,7 @@ extern crate prettytable;
 pub mod async_task;
 pub mod auth;
 pub mod context;
+pub mod epic;
 pub mod http;
 pub mod http_get;
 pub mod http_jql;

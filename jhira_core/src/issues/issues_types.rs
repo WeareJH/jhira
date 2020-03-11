@@ -1,4 +1,9 @@
+use crate::context::Context;
+use crate::http::HttpString;
+use crate::http_get::HttpGet;
+use crate::issues::issues_display::IssueLink;
 use std::str::FromStr;
+use std::sync::Arc;
 
 #[derive(Deserialize, Debug)]
 pub struct JiraIssues {
@@ -19,6 +24,31 @@ impl FromStr for JiraIssues {
 pub struct JiraIssue {
     pub fields: JiraFields,
     pub key: String,
+}
+
+impl JiraIssue {
+    pub fn is_epic(&self) -> bool {
+        self.fields.issuetype.name == "Epic"
+    }
+    pub fn summary(&self) -> String {
+        self.fields
+            .summary
+            .as_ref()
+            .clone()
+            .map(|x| x.to_owned())
+            .unwrap_or_else(|| String::from("Missing sumary"))
+    }
+    pub async fn fetch(
+        id: impl Into<String>,
+        context: Arc<Context>,
+    ) -> Result<JiraIssue, failure::Error> {
+        let id = id.into();
+        let url = IssueLink::http_get(&context.clone(), &id);
+        let resp = HttpGet::new(url).exec_http(context.clone()).await?;
+        // fs::write(std::path::PathBuf::from("out.json"), &resp);
+        let epic_issue: JiraIssue = serde_json::from_str(&resp)?;
+        Ok(epic_issue)
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]

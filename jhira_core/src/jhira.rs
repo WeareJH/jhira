@@ -8,6 +8,7 @@ use crate::http_jql::HttpJql;
 use crate::issues::issues_cmd::IssuesCmd;
 use std::sync::Arc;
 
+use crate::epic::EpicCmd;
 use crate::jql::JqlCmd;
 
 #[derive(Debug)]
@@ -43,6 +44,8 @@ pub enum Subcommands {
         #[structopt(subcommand)]
         cmd: IssuesCmd,
     },
+    #[structopt(name = "epic")]
+    Epic { id: String },
     #[structopt(name = "jql")]
     Jql {
         jql: HttpJql,
@@ -82,6 +85,10 @@ impl Jhira {
             Worklog { cmd } => {
                 let context: Context = Auth::from_file()?.into();
                 cmd.match_cmd(Arc::new(context))
+            }
+            Epic { id } => {
+                let context: Context = Auth::from_file()?.into();
+                EpicCmd::new(id, Arc::new(context)).into()
             }
             Jql {
                 mut jql,

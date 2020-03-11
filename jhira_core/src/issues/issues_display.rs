@@ -27,9 +27,9 @@ impl AsyncTask for IssuesDisplay {
         let resp_string = resp.clone().ok_or(IssuesDisplayError::Missing)?;
         let issues = JiraIssues::from_str(&resp_string)?;
         let output = if self.verbose {
-            output_verbose(issues, &self.context)
+            output_verbose(&issues, &self.context)
         } else {
-            output_compact(issues, &self.context)
+            output_compact(&issues, &self.context)
         };
         Ok(TaskOutput::String(vec![output]))
     }
@@ -44,10 +44,22 @@ impl IssueLink {
             ctx.auth.domain, key
         ))
     }
+    pub fn http_get(ctx: &Context, key: &str) -> IssueLink {
+        IssueLink(format!(
+            "https://{}.atlassian.net/rest/api/3/issue/{}",
+            ctx.auth.domain, key
+        ))
+    }
 }
 
 impl fmt::Display for IssueLink {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl From<IssueLink> for String {
+    fn from(link: IssueLink) -> Self {
+        format!("{}", link)
     }
 }

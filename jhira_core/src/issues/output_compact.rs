@@ -6,7 +6,7 @@ use prettytable::Table;
 
 use ansi_term::Colour::{Cyan, Green};
 
-pub fn output_compact(issues: JiraIssues, context: &Context) -> String {
+pub fn output_compact(issues: &JiraIssues, context: &Context) -> String {
     let mut table = Table::new();
     table.set_format(*format::consts::FORMAT_CLEAN);
 
@@ -67,10 +67,11 @@ fn summary_table(issues: &JiraIssues) -> String {
 
 #[test]
 fn test_output_compact() {
-    use crate::auth::Auth;
-    let b = include_str!("../../../fixtures/issues-sub-task.json");
-    let i: JiraIssues = serde_json::from_str(b).expect("Should deserialize");
-    let ctx: Context = Auth::default().into();
-    let next = output_compact(i, &ctx);
-    println!("{}", next);
+    // use crate::auth::Auth;
+    // let b = include_str!("../../../fixtures/issues-sub-task.json");
+    // let b = include_str!("../../../epic.json");
+    // let i: JiraIssues = serde_json::from_str(b).expect("Should deserialize");
+    // let ctx: Context = Auth::default().into();
+    // let next = output_compact(&i, &ctx);
+    // println!("{}", next);
 }

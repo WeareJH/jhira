@@ -9,6 +9,12 @@ pub struct HttpGet {
     pub url: String,
 }
 
+impl HttpGet {
+    pub fn new(path: impl Into<String>) -> HttpGet {
+        HttpGet { url: path.into() }
+    }
+}
+
 #[async_trait(?Send)]
 impl HttpString for HttpGet {
     async fn exec_http(&self, context: Arc<Context>) -> Result<String, failure::Error> {

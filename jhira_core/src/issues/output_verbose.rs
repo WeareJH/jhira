@@ -7,7 +7,7 @@ use prettytable::{Cell, Row, Table};
 use crate::issues::issues_display::IssueLink;
 use ansi_term::Colour::{Cyan, Green};
 
-pub fn output_verbose(issues: JiraIssues, context: &Context) -> String {
+pub fn output_verbose(issues: &JiraIssues, context: &Context) -> String {
     let mut table = Table::new();
     table.set_format(*format::consts::FORMAT_CLEAN);
     for (_i, issue) in issues.issues.iter().enumerate() {
@@ -17,7 +17,7 @@ pub fn output_verbose(issues: JiraIssues, context: &Context) -> String {
             .fields
             .summary
             .clone()
-            .unwrap_or(String::from("No summary"));
+            .unwrap_or_else(|| String::from("No summary"));
         let title = format!("{} {}", Green.bold().paint(&issue.key), Cyan.paint(summary));
         let issue_link = IssueLink::from_context(&context, &issue.key);
         t1.set_titles(Row::new(vec![Cell::new(&title)]));
@@ -43,6 +43,6 @@ fn test_output_verbose() {
     let b = include_str!("../../../fixtures/issues-sub-task.json");
     let i: JiraIssues = serde_json::from_str(b).expect("Should deserialize");
     let ctx: Context = Auth::default().into();
-    let next = output_verbose(i, &ctx);
+    let next = output_verbose(&i, &ctx);
     println!("{}", next);
 }
