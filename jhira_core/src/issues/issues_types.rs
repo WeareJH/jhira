@@ -36,7 +36,28 @@ impl JiraIssue {
             .as_ref()
             .clone()
             .map(|x| x.to_owned())
-            .unwrap_or_else(|| String::from("Missing sumary"))
+            .unwrap_or_else(|| String::from("Missing summary"))
+    }
+    pub fn short_summary(&self) -> String {
+        JiraIssue::_short_summary(&self.summary())
+    }
+    pub fn assignee_name(&self) -> Option<String> {
+        self.fields.assignee.as_ref().and_then(|x| x.display_name.clone())
+    }
+    pub fn _short_summary(s: &str) -> String {
+        let limit = 50;
+        let padding = 3;
+        let len = s.len();
+        if s.len() > limit {
+            let diff = len - limit;
+            if diff > 0 {
+                return format!("{}...", s.chars().take(limit - padding).collect::<String>());
+            } else {
+                s.chars().take(limit).collect()
+            }
+        } else {
+            s.to_string()
+        }
     }
     pub async fn fetch(
         id: impl Into<String>,
@@ -57,6 +78,7 @@ pub struct JiraFields {
     pub status: IssueType,
     pub summary: Option<String>,
     pub subtasks: Option<Vec<JiraIssue>>,
+    pub assignee: Option<Assignee>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -67,5 +89,11 @@ pub struct IssueType {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct IssueStatus {
-    name: String,
+    pub name: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Assignee {
+    #[serde(rename = "displayName")]
+    pub display_name: Option<String>
 }

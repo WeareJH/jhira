@@ -1,13 +1,13 @@
 use crate::context::Context;
 use crate::epic::Epic;
 use crate::issues::issues_display::IssueLink;
-use crate::issues::output_compact::output_compact as issues_output;
+use crate::issues::output_compact::{output_compact as issues_output, CompactOpts};
 use ansi_term::Colour::{Green, Yellow};
 use prettytable::Table;
 
 pub fn output_compact(epic: &Epic, context: &Context) -> String {
     // format!("epic has {} assigned tasks", epic.issues.issues.len())
-    let list = issues_output(&epic.issues, context);
+    let list = issues_output(&epic.issues, context, CompactOpts{ show_assignee: true });
 
     // let h1 = Green.bold().paint("Epic");
     let h1 = Green.bold().paint(epic.issue.summary());

@@ -49,6 +49,8 @@ pub enum Subcommands {
     #[structopt(name = "jql")]
     Jql {
         jql: HttpJql,
+        #[structopt(long = "json")]
+        json: bool,
         #[structopt(long = "max")]
         max: Option<u16>,
         #[structopt(long = "fields")]
@@ -94,10 +96,11 @@ impl Jhira {
                 mut jql,
                 max,
                 fields,
+                json,
             } => {
                 let context: Context = Auth::from_file()?.into();
                 let jql_http = jql.max_opt(max).fields_opt(fields).build();
-                JqlCmd::new(jql_http, Arc::new(context)).into()
+                JqlCmd::new(jql_http, json, Arc::new(context)).into()
             }
             Login { api, domain, email } => {
                 let auth = Auth { api, domain, email };

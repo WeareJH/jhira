@@ -1,7 +1,7 @@
 use crate::async_task::{AsyncTask, TaskOutput};
 use crate::context::Context;
 use crate::issues::issues_types::JiraIssues;
-use crate::issues::output_compact::output_compact;
+use crate::issues::output_compact::{output_compact, CompactOpts};
 use crate::issues::output_verbose::output_verbose;
 use async_trait::async_trait;
 use std::fmt;
@@ -12,6 +12,7 @@ pub struct IssuesDisplay {
     pub resp: Arc<Mutex<Option<String>>>,
     pub context: Arc<Context>,
     pub verbose: bool,
+    pub current_user_only: bool,
 }
 
 #[derive(Fail, Debug)]
@@ -26,10 +27,11 @@ impl AsyncTask for IssuesDisplay {
         let resp = self.resp.lock().unwrap();
         let resp_string = resp.clone().ok_or(IssuesDisplayError::Missing)?;
         let issues = JiraIssues::from_str(&resp_string)?;
+        let show_assignee = !self.current_user_only;
         let output = if self.verbose {
             output_verbose(&issues, &self.context)
         } else {
-            output_compact(&issues, &self.context)
+            output_compact(&issues, &self.context, CompactOpts{ show_assignee })
         };
         Ok(TaskOutput::String(vec![output]))
     }

@@ -1,12 +1,16 @@
 use crate::context::Context;
 use crate::issues::issues_display::IssueLink;
-use crate::issues::issues_types::JiraIssues;
+use crate::issues::issues_types::{JiraIssues};
 use prettytable::format;
 use prettytable::Table;
 
 use ansi_term::Colour::{Cyan, Green};
 
-pub fn output_compact(issues: &JiraIssues, context: &Context) -> String {
+pub struct CompactOpts {
+    pub show_assignee: bool,
+}
+
+pub fn output_compact(issues: &JiraIssues,  context: &Context, opts: CompactOpts) -> String {
     let mut table = Table::new();
     table.set_format(*format::consts::FORMAT_CLEAN);
 
@@ -20,18 +24,31 @@ pub fn output_compact(issues: &JiraIssues, context: &Context) -> String {
         let has_sub_tasks = sub_task_count > 0;
         let row_1 = &v.fields.issuetype.name;
         let row_2 = &v.fields.status.name;
-        let row_3 = format!(
+        let row_3 = &v.short_summary();
+        let row_4 = format!(
             "{}{}",
             if has_sub_tasks { "• " } else { "" },
             IssueLink::from_context(&context, &v.key)
         );
+        let row_5 = if opts.show_assignee { v.assignee_name() } else { None };
 
-        table.add_row(row![
-            Green.bold().paint(row_1),
-            Cyan.paint(row_2),
-            row_3,
-            // row_4
-        ]);
+        if let Some(assignee) = row_5 {
+            table.add_row(row![
+                Green.bold().paint(row_1),
+                Cyan.paint(row_2),
+                row_3,
+                row_4,
+                assignee
+            ]);
+        } else {
+            table.add_row(row![
+                Green.bold().paint(row_1),
+                Cyan.paint(row_2),
+                row_3,
+                row_4,
+            ]);
+        }
+
 
         if let Some(ref sub) = v.fields.subtasks {
             let iter = sub.iter().enumerate();
@@ -39,15 +56,29 @@ pub fn output_compact(issues: &JiraIssues, context: &Context) -> String {
             for (i, v) in iter {
                 let row_1 = &v.fields.issuetype.name;
                 let row_2 = &v.fields.status.name;
+                let row_3 = &v.short_summary();
                 let is_last = i + 1 == count;
                 let prefix = if is_last { "└─" } else { "├─" };
-                let row_3 = format!("{} {}", prefix, IssueLink::from_context(&context, &v.key));
-                table.add_row(row![
-                    Green.bold().paint(row_1),
-                    Cyan.paint(row_2),
-                    row_3,
-                    // row_4
-                ]);
+                let row_4 = format!("{} {}", prefix, IssueLink::from_context(&context, &v.key));
+                let row_5 = if opts.show_assignee { v.assignee_name() } else { None };
+
+                // todo, subtasks cannot access assignee yet...
+                if let Some(assignee) = row_5 {
+                    table.add_row(row![
+                        Green.bold().paint(row_1),
+                        Cyan.paint(row_2),
+                        row_3,
+                        row_4,
+                        assignee
+                    ]);
+                } else {
+                    table.add_row(row![
+                        Green.bold().paint(row_1),
+                        Cyan.paint(row_2),
+                        row_3,
+                        row_4,
+                    ]);
+                }
             }
         }
     }

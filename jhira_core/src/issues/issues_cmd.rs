@@ -13,9 +13,17 @@ pub enum IssuesCmd {
     /// List issues assigned to you
     #[structopt(name = "ls")]
     List {
+        /// Issue search against all users (rather than just assigned)
+        #[structopt(long = "all")]
+        all: bool,
+
         /// Which issue ids to fetch
         #[structopt(long = "verbose", short = "v")]
         verbose: bool,
+
+        /// Search by summary
+        #[structopt(long = "summary", short = "s")]
+        summary: Option<String>,
 
         /// Which issue ids to fetch
         #[structopt(long = "id")]
@@ -62,6 +70,8 @@ impl IssuesCmd {
                 not_status,
                 id,
                 verbose,
+                summary,
+                all,
             } => {
                 let mut fetch = IssuesFetch::new(context.clone());
 
@@ -71,6 +81,8 @@ impl IssuesCmd {
                 fetch.not_status = not_status.clone();
                 fetch.project = project.clone();
                 fetch.id = id.clone();
+                fetch.summary = summary.clone();
+                fetch.all = all.clone();
 
                 fetch.max = *max;
 
@@ -78,6 +90,7 @@ impl IssuesCmd {
                     resp: fetch.resp.clone(),
                     context,
                     verbose: *verbose,
+                    current_user_only: fetch.current_user_only(),
                 };
                 Ok(vec![Box::new(fetch), Box::new(display)])
             }

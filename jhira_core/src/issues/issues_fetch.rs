@@ -11,7 +11,9 @@ pub struct IssuesFetch {
     pub context: Arc<Context>,
     pub resp: Arc<Mutex<Option<String>>>,
 
+    pub all: bool,
     pub id: Option<Vec<String>>,
+    pub summary: Option<String>,
 
     pub project: Option<Vec<String>>,
 
@@ -34,24 +36,37 @@ impl IssuesFetch {
         }
     }
     ///
+    /// Decide if we're only looking at a currentUser
+    ///
+    pub fn current_user_only(&self) -> bool {
+        if let Some(kinds) = &self.kind {
+            if kinds.iter().any(|n| n == "epic" || n == "Epic") {
+                return false;
+            }
+        }
+        // If we've asked for specific IDs, don't limit to assigned
+        if self.id.is_some() {
+            return false;
+        }
+
+        if self.all {
+            return false;
+        }
+
+        true
+    }
+    ///
     /// Should the issue list be filtered to the current
     /// user? Mostly I think they should, But in cases like
     /// wanting to view epics only, assignee wouldn't work
     ///
     pub fn jql_assignee(&self) -> Option<String> {
-        // If we're looking up any epics, don't limit to assigned
-        if let Some(kinds) = &self.kind {
-            if kinds.iter().any(|n| n == "epic" || n == "Epic") {
-                return None;
-            }
+        if self.current_user_only() {
+            // if we get here, we are limiting the issue search to
+            // only include those assigned
+            return Some(String::from("assignee = currentUser()"));
         }
-        // If we've asked for specific IDs, don't limit to assigned
-        if self.id.is_some() {
-            return None;
-        }
-        // if we get here, we are limiting the issue search to
-        // only include those assigned
-        Some(String::from("assignee = currentUser()"))
+        return None
     }
     ///
     /// Should the issue list be filtered by the issue id?
@@ -125,6 +140,16 @@ impl IssuesFetch {
             .map(|project| format!("project in ({})", project.join(",")))
     }
     ///
+    /// Should the issue list be filtered by a search string
+    ///
+    /// eg: `issues ls --kind epic`
+    ///
+    pub fn jql_summary(&self) -> Option<String> {
+        self.summary
+            .as_ref()
+            .map(|summary| format!(r#"summary ~ "{}""#, snailquote::escape(summary)))
+    }
+    ///
     /// Perform the actual fetch by converting this type into
     /// a `HttpJql`
     ///
@@ -150,6 +175,7 @@ impl From<&IssuesFetch> for HttpJql {
         let and_items: String = vec![
             fetch.jql_assignee(),
             fetch.jql_id(),
+            fetch.jql_summary(),
             fetch.jql_project(),
             fetch.jql_kind(),
             fetch.jql_not_kind(),
