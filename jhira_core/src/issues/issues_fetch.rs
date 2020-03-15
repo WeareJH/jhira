@@ -66,7 +66,7 @@ impl IssuesFetch {
             // only include those assigned
             return Some(String::from("assignee = currentUser()"));
         }
-        return None
+        None
     }
     ///
     /// Should the issue list be filtered by the issue id?

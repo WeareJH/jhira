@@ -31,7 +31,7 @@ impl AsyncTask for IssuesDisplay {
         let output = if self.verbose {
             output_verbose(&issues, &self.context)
         } else {
-            output_compact(&issues, &self.context, CompactOpts{ show_assignee })
+            output_compact(&issues, &self.context, CompactOpts { show_assignee })
         };
         Ok(TaskOutput::String(vec![output]))
     }

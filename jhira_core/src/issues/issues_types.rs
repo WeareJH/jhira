@@ -42,7 +42,10 @@ impl JiraIssue {
         JiraIssue::_short_summary(&self.summary())
     }
     pub fn assignee_name(&self) -> Option<String> {
-        self.fields.assignee.as_ref().and_then(|x| x.display_name.clone())
+        self.fields
+            .assignee
+            .as_ref()
+            .and_then(|x| x.display_name.clone())
     }
     pub fn _short_summary(s: &str) -> String {
         let limit = 50;
@@ -95,5 +98,5 @@ pub struct IssueStatus {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Assignee {
     #[serde(rename = "displayName")]
-    pub display_name: Option<String>
+    pub display_name: Option<String>,
 }

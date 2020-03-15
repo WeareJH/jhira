@@ -2,11 +2,11 @@ use crate::async_task::{AsyncTask, Return, TaskOutput};
 use crate::context::Context;
 use crate::http::HttpString;
 use crate::http_jql::HttpJql;
+use crate::issues::issues_types::JiraIssues;
+use crate::issues::output_compact::{output_compact, CompactOpts};
 use crate::task::TaskSequence;
 use async_trait::async_trait;
 use std::sync::Arc;
-use crate::issues::issues_types::JiraIssues;
-use crate::issues::output_compact::{output_compact, CompactOpts};
 
 #[derive(Debug, Clone)]
 pub struct JqlCmd {
@@ -35,7 +35,13 @@ impl AsyncTask for JqlCmd {
             Ok(TaskOutput::string(resp))
         } else {
             let issues: JiraIssues = serde_json::from_str(&resp)?;
-            let output = output_compact(&issues, &self.context.clone(), CompactOpts { show_assignee: true});
+            let output = output_compact(
+                &issues,
+                &self.context.clone(),
+                CompactOpts {
+                    show_assignee: true,
+                },
+            );
             Ok(TaskOutput::string(output))
         }
     }

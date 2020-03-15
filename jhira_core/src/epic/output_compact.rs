@@ -7,7 +7,13 @@ use prettytable::Table;
 
 pub fn output_compact(epic: &Epic, context: &Context) -> String {
     // format!("epic has {} assigned tasks", epic.issues.issues.len())
-    let list = issues_output(&epic.issues, context, CompactOpts{ show_assignee: true });
+    let list = issues_output(
+        &epic.issues,
+        context,
+        CompactOpts {
+            show_assignee: true,
+        },
+    );
 
     // let h1 = Green.bold().paint("Epic");
     let h1 = Green.bold().paint(epic.issue.summary());
