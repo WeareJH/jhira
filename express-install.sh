@@ -36,7 +36,7 @@ path_check() {
 exec_install() {
 	clear_term
 	echo "Beginning express download of JHIRA"
-	curl -L "https://github.com/wearejh/jhira/releases/download/v0.1.2/jhira" --output jhira-temp-binary-file
+	curl -L "https://github.com/wearejh/jhira/releases/download/v0.1.4/jhira" --output jhira-temp-binary-file
 	chmod +x ./jhira-temp-binary-file
 	echo "Download successful!"
 	echo "You may now be asked for your password to install the JHIRA binary"
