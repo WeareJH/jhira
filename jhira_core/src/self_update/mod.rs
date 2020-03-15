@@ -2,9 +2,12 @@ use crate::async_task::{AsyncTask, Return, TaskOutput};
 use crate::task::TaskSequence;
 use ansi_term::Colour::{Blue, Green, Red};
 use async_trait::async_trait;
+use reqwest::header::USER_AGENT;
 use std::fs::File;
 use std::process::Command;
 use std::{env, io};
+
+const GITHUB_URL: &'static str = "https://api.github.com/repos/wearejh/jhira/releases/latest";
 
 #[derive(Debug, Clone)]
 pub struct SelfUpdate {
@@ -48,17 +51,13 @@ struct JhiraJsonAsset {
 }
 
 pub async fn run_self_update(is_auto_confirmed: bool) -> Result<(), failure::Error> {
-    let request_url = String::from("https://api.github.com/repos/wearejh/jhira/releases/latest");
-    let response = reqwest::get(&request_url).await?;
-    let resp = response.text().await?;
-
+    let jhira = github_data().await?;
     let jhira_path_cmd = env::current_exe()?;
 
     let jhira_path = jhira_path_cmd
         .to_str()
         .ok_or(SelfUpdateError::PermissionDenied)?;
 
-    let jhira: JhiraJson = serde_json::from_str(&resp)?;
     let url = jhira
         .assets
         .get(0)
@@ -177,6 +176,32 @@ pub async fn run_self_update(is_auto_confirmed: bool) -> Result<(), failure::Err
     }
 
     Ok(())
+}
+
+async fn github_data() -> Result<JhiraJson, failure::Error> {
+    let request_url = String::from(GITHUB_URL);
+
+    let client = reqwest::Client::new();
+
+    let response = client
+        .get(&request_url)
+        .header(USER_AGENT, "curl") // gh needs a user-agent
+        .send()
+        .await?;
+
+    let resp = match response.error_for_status() {
+        Ok(res) => Ok(res.text().await?),
+        Err(err) => {
+            println!("{:?}", err);
+            Err(err)
+        }
+    }?;
+
+    debug!("got jsoon response === {}", &resp);
+
+    let output: JhiraJson = serde_json::from_str(&resp)?;
+
+    Ok(output)
 }
 
 fn clear_terminal(is_auto_confirmed: bool) {

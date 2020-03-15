@@ -15,11 +15,11 @@ aborting_install() {
 path_check() {
 	path_check_var=$(which jhira)
 	if [ -x "$path_check_var" ] ; then
-			echo "JHIRA appears to be in your path! Continuing..."
+			echo "jhira appears to be in your path! Continuing..."
 			sleep 2
 	else
-			echo "JHIRA does not appear to be in your path,"
-			echo "Would you like the installer to try to auto add JHIRA to your path? (y/n) "
+			echo "jhira does not appear to be in your path,"
+			echo "Would you like the installer to try to auto add jhira to your path? (y/n) "
 			read addToPath
 			if [[ $addToPath == "y" ]] ; then
 					touch ~/.zshrc
@@ -35,11 +35,11 @@ path_check() {
 
 exec_install() {
 	clear_term
-	echo "Beginning express download of JHIRA"
+	echo "Beginning express download of jhira"
 	curl -L "https://github.com/wearejh/jhira/releases/download/v0.1.4/jhira" --output jhira-temp-binary-file
 	chmod +x ./jhira-temp-binary-file
 	echo "Download successful!"
-	echo "You may now be asked for your password to install the JHIRA binary"
+	echo "You may now be asked for your password to install the jhira binary"
 	sudo mkdir -p /opt
 	sudo chown -R $(whoami) /opt
 	mv ./jhira-temp-binary-file /opt/jhira
@@ -52,8 +52,8 @@ exec_install() {
 }
 
 clear_term
-echo "Welcome to the JHIRA Express installer!"
-echo "Would you like to install JHIRA? (y/n) "
+echo "Welcome to the jhira Express installer!"
+echo "Would you like to install jhira? (y/n) "
 read continueInstall
 if [[ $continueInstall == "y" ]] ; then
 		echo "Ok, installing now"
