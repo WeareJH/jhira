@@ -21,8 +21,8 @@ pub mod issues;
 pub mod jhira;
 pub mod jql;
 pub mod login;
+pub mod self_update;
 pub mod task;
 pub mod worklog;
-pub mod self_update;
 
 pub use jhira::*;

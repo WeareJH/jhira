@@ -1,14 +1,14 @@
-use async_trait::async_trait;
-use crate::async_task::{Return, AsyncTask, TaskOutput};
+use crate::async_task::{AsyncTask, Return, TaskOutput};
 use crate::task::TaskSequence;
-use std::{env, io};
+use ansi_term::Colour::{Blue, Green, Red};
+use async_trait::async_trait;
 use std::fs::File;
 use std::process::Command;
-use ansi_term::Colour::{Green, Red, Blue};
+use std::{env, io};
 
 #[derive(Debug, Clone)]
 pub struct SelfUpdate {
-    pub yes: bool
+    pub yes: bool,
 }
 
 impl From<SelfUpdate> for TaskSequence {
@@ -32,7 +32,6 @@ enum SelfUpdateError {
     #[fail(display = "Assets contained no items")]
     NoItems,
 }
-
 
 #[derive(Serialize, Deserialize, Debug)]
 struct JhiraJson {

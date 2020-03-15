@@ -66,7 +66,7 @@ pub enum Subcommands {
     #[structopt(name = "self-update", alias = "update")]
     SelfUpdate {
         /// Accept all prompts and update automatically
-        #[structopt(long="yes", short="y")]
+        #[structopt(long = "yes", short = "y")]
         yes: bool,
     },
 }
