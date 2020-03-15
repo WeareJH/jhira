@@ -10,6 +10,7 @@ use std::sync::Arc;
 
 use crate::epic::EpicCmd;
 use crate::jql::JqlCmd;
+use crate::self_update;
 
 #[derive(Debug)]
 pub struct Jhira {
@@ -61,6 +62,13 @@ pub enum Subcommands {
         #[structopt(subcommand)]
         cmd: Worklog,
     },
+    /// Update to the latest version
+    #[structopt(name = "self-update", alias = "update")]
+    SelfUpdate {
+        /// Accept all prompts and update automatically
+        #[structopt(long="yes", short="y")]
+        yes: bool,
+    },
 }
 
 #[derive(Debug, Fail)]
@@ -105,6 +113,10 @@ impl Jhira {
             Login { api, domain, email } => {
                 let auth = Auth { api, domain, email };
                 auth.login()
+            }
+            SelfUpdate { yes } => {
+                let self_update = self_update::SelfUpdate { yes };
+                self_update.into()
             }
         }?;
         Ok((opt2, upcoming))
