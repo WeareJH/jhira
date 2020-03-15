@@ -4,10 +4,11 @@ use ansi_term::Colour::{Blue, Green, Red};
 use async_trait::async_trait;
 use reqwest::header::USER_AGENT;
 use std::fs::File;
+use std::path::PathBuf;
 use std::process::Command;
 use std::{env, io};
 
-const GITHUB_URL: &'static str = "https://api.github.com/repos/wearejh/jhira/releases/latest";
+const GITHUB_URL: &str = "https://api.github.com/repos/wearejh/jhira/releases/latest";
 
 #[derive(Debug, Clone)]
 pub struct SelfUpdate {
@@ -23,7 +24,7 @@ impl From<SelfUpdate> for TaskSequence {
 #[async_trait(?Send)]
 impl AsyncTask for SelfUpdate {
     async fn exec(&self) -> Return {
-        let _output = run_self_update(self.yes).await?;
+        run_self_update(self.yes).await?;
         Ok(TaskOutput::Done)
     }
 }
@@ -52,11 +53,8 @@ struct JhiraJsonAsset {
 
 pub async fn run_self_update(is_auto_confirmed: bool) -> Result<(), failure::Error> {
     let jhira = github_data().await?;
-    let jhira_path_cmd = env::current_exe()?;
 
-    let jhira_path = jhira_path_cmd
-        .to_str()
-        .ok_or(SelfUpdateError::PermissionDenied)?;
+    let jhira_path = env::current_exe().map_err(|_| SelfUpdateError::PermissionDenied)?;
 
     let url = jhira
         .assets
@@ -89,10 +87,10 @@ pub async fn run_self_update(is_auto_confirmed: bool) -> Result<(), failure::Err
         println!();
         println!(
             "Current jhira directory is reported as: {}",
-            Blue.paint(jhira_path)
+            Blue.paint(jhira_path.to_string_lossy())
         );
         println!();
-        if jhira_path != "/opt/jhira" {
+        if jhira_path != PathBuf::from("/opt/jhira") {
             println!(
                 "{}",
                 Red.paint("Warning! Working directory is NOT the standard directory expected.")
@@ -106,7 +104,7 @@ pub async fn run_self_update(is_auto_confirmed: bool) -> Result<(), failure::Err
             println!(
                 "{} {} {}",
                 Blue.paint("If you wish to fix this, exit out of this app and run 'sudo mv"),
-                Blue.paint(jhira_path),
+                Blue.paint(jhira_path.to_string_lossy()),
                 Blue.paint("/opt/jhira'")
             );
             println!(
@@ -149,22 +147,18 @@ pub async fn run_self_update(is_auto_confirmed: bool) -> Result<(), failure::Err
 
     if ok_to_proceed {
         clear_terminal(is_auto_confirmed);
+
         println!("Starting update...");
 
-        let mut response = reqwest::blocking::get("https://www.rust-lang.org/")?;
-
-        let current_path = std::path::PathBuf::from(jhira_path);
-        let mut current_dir = File::create(current_path)?;
-
-        println!("Attempting to copy to {}", jhira_path);
-
-        response.copy_to(&mut current_dir)?;
+        download_binary(url, &jhira_path)?;
 
         clear_terminal(is_auto_confirmed);
-        let version = Command::new(jhira_path)
+
+        let version = Command::new(&jhira_path)
             .arg("-V")
             .output()
             .expect("failed to execute process");
+
         println!("Success!");
         println!(
             "You updated to {}",
@@ -178,6 +172,9 @@ pub async fn run_self_update(is_auto_confirmed: bool) -> Result<(), failure::Err
     Ok(())
 }
 
+///
+/// Use the Github api to determine the latest version
+///
 async fn github_data() -> Result<JhiraJson, failure::Error> {
     let request_url = String::from(GITHUB_URL);
 
@@ -202,6 +199,21 @@ async fn github_data() -> Result<JhiraJson, failure::Error> {
     let output: JhiraJson = serde_json::from_str(&resp)?;
 
     Ok(output)
+}
+
+///
+/// Actually download and save the binary
+///
+fn download_binary(
+    url: impl Into<String>,
+    output: impl Into<PathBuf>,
+) -> Result<(), failure::Error> {
+    let pb = output.into();
+    let mut response = reqwest::blocking::get(&url.into())?;
+    let mut ouput_file = File::create(&pb)?;
+    println!("Attempting to copy to {}", pb.display());
+    response.copy_to(&mut ouput_file)?;
+    Ok(())
 }
 
 fn clear_terminal(is_auto_confirmed: bool) {
