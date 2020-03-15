@@ -82,7 +82,7 @@ impl IssuesCmd {
                 fetch.project = project.clone();
                 fetch.id = id.clone();
                 fetch.summary = summary.clone();
-                fetch.all = all.clone();
+                fetch.all = *all;
 
                 fetch.max = *max;
 
