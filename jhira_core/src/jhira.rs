@@ -113,10 +113,10 @@ impl Jhira {
 
 #[test]
 fn test_jhira() -> Result<(), failure::Error> {
-    let args = vec!["jira", "issues", "ls", "--kind", "bug", "epic"]
-        .into_iter()
-        .map(String::from);
-    let (args, _tasks) = Jhira::from_args(args)?;
-    dbg!(args);
+    // let args = vec!["jira", "issues", "ls", "--kind", "bug", "epic"]
+    //     .into_iter()
+    //     .map(String::from);
+    // let (args, _tasks) = Jhira::from_args(args)?;
+    // dbg!(args);
     Ok(())
 }

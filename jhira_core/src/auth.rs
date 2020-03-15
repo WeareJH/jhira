@@ -91,7 +91,7 @@ impl From<Auth> for Context {
 
 #[test]
 fn test_auth() -> Result<(), failure::Error> {
-    let a = Auth::from_file();
-    dbg!(a?.basic());
+    // let a = Auth::from_file();
+    // dbg!(a?.basic());
     Ok(())
 }

@@ -215,13 +215,13 @@ impl AsyncTask for IssuesFetch {
 #[tokio::main]
 #[test]
 async fn test_issues_from_ctx() -> Result<(), failure::Error> {
-    use crate::auth::Auth;
-    let a = Auth::from_file()?;
-    let context = Arc::new(Context { auth: a });
-    let mut issues: IssuesFetch = context.into();
-    issues.kind = Some(vec![String::from("epic")]);
-    let jql: HttpJql = (&issues).into();
-    dbg!(jql);
+    // use crate::auth::Auth;
+    // let a = Auth::from_file()?;
+    // let context = Arc::new(Context { auth: a });
+    // let mut issues: IssuesFetch = context.into();
+    // issues.kind = Some(vec![String::from("epic")]);
+    // let jql: HttpJql = (&issues).into();
+    // dbg!(jql);
     // let resp = issues.fetch().await?;
     // println!("resp={}", resp);
     Ok(())
