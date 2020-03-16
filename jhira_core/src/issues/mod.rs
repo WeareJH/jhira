@@ -1,6 +1,9 @@
+pub mod issue_link;
 pub mod issues_cmd;
-pub mod issues_display;
-pub mod issues_fetch;
+pub mod issues_ls;
 pub mod issues_types;
+pub mod jira_issue;
+pub mod jira_issues;
+pub mod ls;
 pub mod output_compact;
 pub mod output_verbose;

@@ -1,5 +1,7 @@
 use jhira_core::async_task::TaskOutput;
 
+use std::sync::Arc;
+
 ///
 /// Examples
 ///
@@ -20,12 +22,13 @@ async fn main() -> Result<(), failure::Error> {
 }
 
 async fn run(args: Vec<String>) -> Result<(), failure::Error> {
-    let (opt, tasks) = jhira_core::Jhira::from_args(args.into_iter())?;
-    for t in tasks {
-        let task_output = if opt.dry_run {
+    let output = jhira_core::Jhira::from_args(args.into_iter())?;
+    let context_arc = Arc::new(output.context);
+    for t in output.tasks {
+        let task_output = if output.args.dry_run {
             t.dry_run().await?
         } else {
-            t.exec().await?
+            t.exec(context_arc.clone()).await?
         };
         handle_output(task_output);
     }

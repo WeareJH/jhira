@@ -1,6 +1,6 @@
 use crate::context::Context;
 use crate::epic::Epic;
-use crate::issues::issues_display::IssueLink;
+use crate::issues::issue_link::IssueLink;
 use crate::issues::output_compact::{output_compact as issues_output, CompactOpts};
 use ansi_term::Colour::{Green, Yellow};
 use prettytable::Table;

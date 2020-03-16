@@ -1,9 +1,9 @@
 use crate::context::Context;
-use crate::issues::issues_display::IssueLink;
-use crate::issues::issues_types::JiraIssues;
 use prettytable::format;
 use prettytable::Table;
 
+use crate::issues::issue_link::IssueLink;
+use crate::issues::jira_issues::JiraIssues;
 use ansi_term::Colour::{Cyan, Green};
 
 pub struct CompactOpts {

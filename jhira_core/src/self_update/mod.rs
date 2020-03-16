@@ -1,4 +1,5 @@
 use crate::async_task::{AsyncTask, Return, TaskOutput};
+use crate::context::Context;
 use crate::task::TaskSequence;
 use ansi_term::Colour::{Blue, Green, Red};
 use async_trait::async_trait;
@@ -6,12 +7,16 @@ use reqwest::header::USER_AGENT;
 use std::fs::File;
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::Arc;
 use std::{env, io};
+use structopt::StructOpt;
 
 const GITHUB_URL: &str = "https://api.github.com/repos/wearejh/jhira/releases/latest";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, StructOpt, Clone)]
 pub struct SelfUpdate {
+    /// Accept all prompts and update automatically
+    #[structopt(long = "yes", short = "y")]
     pub yes: bool,
 }
 
@@ -23,7 +28,7 @@ impl From<SelfUpdate> for TaskSequence {
 
 #[async_trait(?Send)]
 impl AsyncTask for SelfUpdate {
-    async fn exec(&self) -> Return {
+    async fn exec(&self, _ctx: Arc<Context>) -> Return {
         run_self_update(self.yes).await?;
         Ok(TaskOutput::Done)
     }

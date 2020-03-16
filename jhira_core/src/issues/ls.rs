@@ -2,39 +2,62 @@ use crate::async_task::{AsyncTask, TaskOutput};
 use crate::context::Context;
 use crate::http::HttpString;
 use crate::http_jql::HttpJql;
+use crate::issues::jira_issues::JiraIssues;
+use crate::issues::output_compact::{output_compact, CompactOpts};
+use crate::issues::output_verbose::output_verbose;
+use crate::task::TaskSequence;
 use async_trait::async_trait;
+use std::str::FromStr;
+use std::sync::Arc;
+use structopt::StructOpt;
 
-use std::sync::{Arc, Mutex};
-
-#[derive(Debug, Default)]
-pub struct IssuesFetch {
-    pub context: Arc<Context>,
-    pub resp: Arc<Mutex<Option<String>>>,
-
+///
+/// List issues
+///
+#[derive(Debug, StructOpt, Clone)]
+pub struct IssuesLs {
+    /// Issue search against all users (rather than just assigned)
+    #[structopt(long = "all")]
     pub all: bool,
-    pub id: Option<Vec<String>>,
+
+    /// Which issue ids to fetch
+    #[structopt(long = "verbose", short = "v")]
+    pub verbose: bool,
+
+    /// Search by summary, eg: 'checkout'
+    #[structopt(long = "summary", short = "s")]
     pub summary: Option<String>,
 
+    /// Which issue ids to fetch
+    #[structopt(long = "id")]
+    pub id: Option<Vec<String>>,
+
+    /// Which projects to fetch issues for. eg: 'abc'
+    #[structopt(long = "project")]
     pub project: Option<Vec<String>>,
 
+    /// Which issue types to show. eg: 'epic' 'bug' 'story'
+    #[structopt(short = "k", long = "kind")]
     pub kind: Option<Vec<String>>,
+
+    /// Which issue types to exclude
+    #[structopt(long = "not-kind")]
     pub not_kind: Option<Vec<String>>,
 
+    /// Which statuses to include, eg: 'refinement' 'ready' 'validated'
+    #[structopt(long = "status")]
     pub status: Option<Vec<String>>,
+
+    /// Which statuses to exclude
+    #[structopt(long = "not-status")]
     pub not_status: Option<Vec<String>>,
 
+    /// Max number of results to fetch
+    #[structopt(long = "max")]
     pub max: Option<u16>,
 }
 
-impl IssuesFetch {
-    pub fn new(context: Arc<Context>) -> IssuesFetch {
-        let resp = Arc::new(Mutex::new(None));
-        IssuesFetch {
-            context,
-            resp,
-            ..Default::default()
-        }
-    }
+impl IssuesLs {
     ///
     /// Decide if we're only looking at a currentUser
     ///
@@ -153,25 +176,22 @@ impl IssuesFetch {
     /// Perform the actual fetch by converting this type into
     /// a `HttpJql`
     ///
-    async fn fetch(&self) -> Result<String, failure::Error> {
+    async fn fetch(&self, ctx: Arc<Context>) -> Result<JiraIssues, failure::Error> {
         let mut jql: HttpJql = self.into();
         let req = jql.max_results(self.max.unwrap_or(100)).build();
 
-        debug!("{:#?}", jql);
+        debug!("jql = {:#?}", jql);
 
-        let resp = req.exec_http(self.context.clone()).await?;
-        Ok(resp)
+        let resp = req.exec_http(ctx.clone()).await?;
+
+        let issues = JiraIssues::from_str(&resp)?;
+
+        Ok(issues)
     }
 }
 
-impl From<Arc<Context>> for IssuesFetch {
-    fn from(c: Arc<Context>) -> Self {
-        IssuesFetch::new(c)
-    }
-}
-
-impl From<&IssuesFetch> for HttpJql {
-    fn from(fetch: &IssuesFetch) -> Self {
+impl From<&IssuesLs> for HttpJql {
+    fn from(fetch: &IssuesLs) -> Self {
         let and_items: String = vec![
             fetch.jql_assignee(),
             fetch.jql_id(),
@@ -198,13 +218,20 @@ impl From<&IssuesFetch> for HttpJql {
 }
 
 #[async_trait(?Send)]
-impl AsyncTask for IssuesFetch {
-    async fn exec(&self) -> Result<TaskOutput, failure::Error> {
-        let resp = self.fetch().await?;
-        // fs::write(std::path::PathBuf::from("out.json"), &resp);
-        let mut l = self.resp.lock().unwrap();
-        *l = Some(resp);
-        Ok(TaskOutput::Done)
+impl AsyncTask for IssuesLs {
+    async fn exec(&self, ctx: Arc<Context>) -> Result<TaskOutput, failure::Error> {
+        // fetch the issues
+        let issues = self.fetch(ctx.clone()).await?;
+
+        // output the issues
+        let show_assignee = !self.current_user_only();
+        let output = if self.verbose {
+            output_verbose(&issues, &ctx)
+        } else {
+            output_compact(&issues, &ctx, CompactOpts { show_assignee })
+        };
+
+        Ok(TaskOutput::string(output))
     }
     async fn dry_run(&self) -> Result<TaskOutput, failure::Error> {
         println!("{:#?}", self);
@@ -212,17 +239,8 @@ impl AsyncTask for IssuesFetch {
     }
 }
 
-#[tokio::main]
-#[test]
-async fn test_issues_from_ctx() -> Result<(), failure::Error> {
-    // use crate::auth::Auth;
-    // let a = Auth::from_file()?;
-    // let context = Arc::new(Context { auth: a });
-    // let mut issues: IssuesFetch = context.into();
-    // issues.kind = Some(vec![String::from("epic")]);
-    // let jql: HttpJql = (&issues).into();
-    // dbg!(jql);
-    // let resp = issues.fetch().await?;
-    // println!("resp={}", resp);
-    Ok(())
+impl From<IssuesLs> for TaskSequence {
+    fn from(ls: IssuesLs) -> Self {
+        Ok(vec![Box::new(ls)])
+    }
 }

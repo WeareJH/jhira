@@ -14,7 +14,7 @@ pub struct LoginVerify {
 
 #[async_trait(?Send)]
 impl AsyncTask for LoginVerify {
-    async fn exec(&self) -> Result<TaskOutput, failure::Error> {
+    async fn exec(&self, _ctx: Arc<Context>) -> Result<TaskOutput, failure::Error> {
         let ctx: Context = self.auth.clone().into();
         let http = HttpGet {
             url: format!(
@@ -29,6 +29,9 @@ impl AsyncTask for LoginVerify {
         debug!("Auth all good");
         Ok(TaskOutput::Done)
     }
+    fn authenticated(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Debug)]
@@ -38,10 +41,13 @@ pub struct LoginWrite {
 
 #[async_trait(?Send)]
 impl AsyncTask for LoginWrite {
-    async fn exec(&self) -> Result<TaskOutput, failure::Error> {
+    async fn exec(&self, _ctx: Arc<Context>) -> Result<TaskOutput, failure::Error> {
         Auth::write_to_file(&self.auth)?;
         Ok(TaskOutput::String(vec![String::from(
             "Login verified and saved :)",
         )]))
+    }
+    fn authenticated(&self) -> bool {
+        false
     }
 }

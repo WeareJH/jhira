@@ -6,6 +6,9 @@ use crate::task::TaskSequence;
 
 use crate::login::{LoginVerify, LoginWrite};
 
+const FILE_DIR: &str = ".jhira";
+const FILE_NAME: &str = "jhira.json";
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Auth {
     pub domain: String,
@@ -63,7 +66,7 @@ impl Auth {
     pub fn output_file() -> Result<PathBuf, failure::Error> {
         dirs::home_dir()
             .ok_or_else(|| AuthError::CouldNotRead.into())
-            .map(|home| home.join(".jhira").join("jhira.json"))
+            .map(|home| home.join(FILE_DIR).join(FILE_NAME))
     }
 
     pub fn from_file() -> Result<Auth, failure::Error> {
@@ -91,7 +94,5 @@ impl From<Auth> for Context {
 
 #[test]
 fn test_auth() -> Result<(), failure::Error> {
-    // let a = Auth::from_file();
-    // dbg!(a?.basic());
     Ok(())
 }

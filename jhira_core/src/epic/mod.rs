@@ -1,9 +1,11 @@
+use crate::async_task::{AsyncTask, TaskOutput};
 use crate::context::Context;
-use crate::epic::epic_display::EpicDisplay;
-use crate::epic::epic_fetch::EpicFetch;
-use crate::issues::issues_types::{JiraIssue, JiraIssues};
+use crate::issues::jira_issue::JiraIssue;
+use crate::issues::jira_issues::JiraIssues;
 use crate::task::TaskSequence;
-use std::sync::{Arc, Mutex};
+use async_trait::async_trait;
+use std::sync::Arc;
+use structopt::StructOpt;
 
 pub mod epic_display;
 pub mod epic_fetch;
@@ -15,34 +17,28 @@ pub struct Epic {
     issues: JiraIssues,
 }
 
-#[derive(Debug, Clone)]
+#[derive(StructOpt, Debug, Clone)]
 pub struct EpicCmd {
-    id: String,
-    context: Arc<Context>,
+    pub id: String,
 }
 
 impl EpicCmd {
-    pub fn new(id: impl Into<String>, context: Arc<Context>) -> Self {
-        Self {
-            id: id.into(),
-            context,
-        }
+    pub fn new(id: impl Into<String>) -> Self {
+        Self { id: id.into() }
+    }
+}
+
+#[async_trait(?Send)]
+impl AsyncTask for EpicCmd {
+    async fn exec(&self, ctx: Arc<Context>) -> Result<TaskOutput, failure::Error> {
+        let epic: Epic = epic_fetch::fetch(self.id.clone(), ctx.clone()).await?;
+        let as_string = epic_display::epic_display(epic, ctx)?;
+        Ok(TaskOutput::string(as_string))
     }
 }
 
 impl From<EpicCmd> for TaskSequence {
     fn from(epic_cmd: EpicCmd) -> Self {
-        let epic: Arc<Mutex<Option<Epic>>> = Arc::new(Mutex::new(None));
-        let fetch = EpicFetch {
-            context: epic_cmd.context.clone(),
-            id: epic_cmd.id.clone(),
-            epic: epic.clone(),
-        };
-        let display = EpicDisplay {
-            context: epic_cmd.context,
-            id: epic_cmd.id.clone(),
-            epic,
-        };
-        Ok(vec![Box::new(fetch), Box::new(display)])
+        Ok(vec![Box::new(epic_cmd)])
     }
 }

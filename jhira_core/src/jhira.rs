@@ -6,15 +6,21 @@ use crate::auth::Auth;
 use crate::context::Context;
 use crate::http_jql::HttpJql;
 use crate::issues::issues_cmd::IssuesCmd;
-use std::sync::Arc;
 
 use crate::epic::EpicCmd;
 use crate::jql::JqlCmd;
-use crate::self_update;
+
+use crate::self_update::SelfUpdate;
 
 #[derive(Debug)]
 pub struct Jhira {
     pub args: Vec<String>,
+}
+
+pub struct JhiraOutput {
+    pub args: Args,
+    pub tasks: Vec<Box<dyn AsyncTask>>,
+    pub context: Context,
 }
 
 #[derive(StructOpt, Debug)]
@@ -46,7 +52,7 @@ pub enum Subcommands {
         cmd: IssuesCmd,
     },
     #[structopt(name = "epic")]
-    Epic { id: String },
+    Epic(EpicCmd),
     #[structopt(name = "jql")]
     Jql {
         jql: HttpJql,
@@ -64,11 +70,7 @@ pub enum Subcommands {
     },
     /// Update to the latest version
     #[structopt(name = "self-update", alias = "update")]
-    SelfUpdate {
-        /// Accept all prompts and update automatically
-        #[structopt(long = "yes", short = "y")]
-        yes: bool,
-    },
+    SelfUpdate(SelfUpdate),
 }
 
 #[derive(Debug, Fail)]
@@ -80,55 +82,55 @@ pub enum CliError {
 }
 
 impl Jhira {
-    pub fn from_args(
-        args: impl Iterator<Item = String>,
-    ) -> Result<(Args, Vec<Box<dyn AsyncTask>>), failure::Error> {
+    pub fn from_args(args: impl Iterator<Item = String>) -> Result<JhiraOutput, failure::Error> {
         let c = args.collect::<Vec<String>>();
         let opt: Args = Args::from_iter(&c);
         let opt2: Args = Args::from_iter(&c);
         use Subcommands::*;
-        let upcoming = match opt.cmd {
-            Issues { cmd } => {
-                let context: Context = Auth::from_file()?.into();
-                cmd.match_cmd(Arc::new(context))
-            }
-            Worklog { cmd } => {
-                let context: Context = Auth::from_file()?.into();
-                cmd.match_cmd(Arc::new(context))
-            }
-            Epic { id } => {
-                let context: Context = Auth::from_file()?.into();
-                EpicCmd::new(id, Arc::new(context)).into()
-            }
+        let tasks: Vec<Box<dyn AsyncTask>> = match opt.cmd {
+            Issues { cmd } => cmd.into(),
+            Worklog { cmd } => cmd.match_cmd(),
+            Epic(cmd) => cmd.into(),
             Jql {
                 mut jql,
                 max,
                 fields,
                 json,
             } => {
-                let context: Context = Auth::from_file()?.into();
                 let jql_http = jql.max_opt(max).fields_opt(fields).build();
-                JqlCmd::new(jql_http, json, Arc::new(context)).into()
+                JqlCmd::new(jql_http, json).into()
             }
             Login { api, domain, email } => {
                 let auth = Auth { api, domain, email };
                 auth.login()
             }
-            SelfUpdate { yes } => {
-                let self_update = self_update::SelfUpdate { yes };
-                self_update.into()
-            }
+            SelfUpdate(self_update) => self_update.into(),
         }?;
-        Ok((opt2, upcoming))
+        let requires_auth = tasks.iter().any(|x| x.authenticated());
+        let context = if requires_auth {
+            let ctx: Context = Auth::from_file()?.into();
+            ctx
+        } else {
+            Context::default()
+        };
+
+        Ok(JhiraOutput {
+            context,
+            tasks,
+            args: opt2,
+        })
     }
 }
 
+#[tokio::main]
 #[test]
-fn test_jhira() -> Result<(), failure::Error> {
-    // let args = vec!["jira", "issues", "ls", "--kind", "bug", "epic"]
-    //     .into_iter()
-    //     .map(String::from);
-    // let (args, _tasks) = Jhira::from_args(args)?;
-    // dbg!(args);
+async fn test_jhira() -> Result<(), failure::Error> {
+    let args = vec!["jira", "issues", "ls", "--kind", "bug", "epic"]
+        .into_iter()
+        .map(String::from);
+    let output = Jhira::from_args(args)?;
+    for t in output.tasks {
+        let _ = t.dry_run().await?;
+    }
     Ok(())
 }

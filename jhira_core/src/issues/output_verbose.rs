@@ -1,10 +1,10 @@
 use crate::context::Context;
 use prettytable::format;
 
-use crate::issues::issues_types::JiraIssues;
 use prettytable::{Cell, Row, Table};
 
-use crate::issues::issues_display::IssueLink;
+use crate::issues::issue_link::IssueLink;
+use crate::issues::jira_issues::JiraIssues;
 use ansi_term::Colour::{Cyan, Green};
 
 pub fn output_verbose(issues: &JiraIssues, context: &Context) -> String {
