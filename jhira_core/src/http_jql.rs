@@ -6,7 +6,7 @@ use reqwest::header::AUTHORIZATION;
 use std::str::FromStr;
 use std::sync::Arc;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct HttpJql {
     pub jql: String,
     pub max_results: u16,

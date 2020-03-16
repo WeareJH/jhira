@@ -1,11 +1,46 @@
 use crate::async_task::{AsyncTask, TaskOutput};
 use crate::auth::{Auth, AuthError};
+use structopt::StructOpt;
 
 use crate::context::Context;
 use crate::http::HttpString;
 use crate::http_get::HttpGet;
+use crate::task::TaskSequence;
 use async_trait::async_trait;
 use std::sync::Arc;
+
+#[derive(StructOpt, Debug, Clone)]
+pub struct LoginCmd {
+    #[structopt(long = "domain")]
+    pub domain: String,
+
+    #[structopt(long = "api")]
+    pub api: String,
+
+    #[structopt(long = "email")]
+    pub email: String,
+}
+
+impl From<LoginCmd> for TaskSequence {
+    fn from(login_cmd: LoginCmd) -> Self {
+        let auth = Auth {
+            domain: login_cmd.domain,
+            api: login_cmd.api,
+            email: login_cmd.email,
+        };
+
+        let a1 = auth.clone();
+        let a2 = auth;
+
+        // verify via HTTP call
+        let verify = LoginVerify { auth: a1 };
+
+        // write to disk
+        let write = LoginWrite { auth: a2 };
+
+        Ok(vec![Box::new(verify), Box::new(write)])
+    }
+}
 
 #[derive(Debug)]
 pub struct LoginVerify {

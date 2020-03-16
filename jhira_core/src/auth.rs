@@ -2,9 +2,6 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::context::Context;
-use crate::task::TaskSequence;
-
-use crate::login::{LoginVerify, LoginWrite};
 
 const FILE_DIR: &str = ".jhira";
 const FILE_NAME: &str = "jhira.json";
@@ -44,18 +41,6 @@ pub enum AuthError {
 }
 
 impl Auth {
-    pub fn login(&self) -> TaskSequence {
-        let a1 = self.clone();
-        let a2 = self.clone();
-
-        // verify via HTTP call
-        let verify = LoginVerify { auth: a1 };
-
-        // write to disk
-        let write = LoginWrite { auth: a2 };
-
-        Ok(vec![Box::new(verify), Box::new(write)])
-    }
     pub fn basic(&self) -> String {
         format!(
             "Basic {}",

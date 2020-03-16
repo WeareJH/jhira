@@ -8,16 +8,26 @@ use crate::task::TaskSequence;
 use async_trait::async_trait;
 use std::str::FromStr;
 use std::sync::Arc;
+use structopt::StructOpt;
 
-#[derive(Debug, Clone)]
+#[derive(StructOpt, Debug, Clone, Default)]
 pub struct JqlCmd {
     jql: HttpJql,
+    #[structopt(long = "json")]
     json: bool,
+    #[structopt(long = "max")]
+    max: Option<u16>,
+    #[structopt(long = "fields")]
+    fields: Option<Vec<String>>,
 }
 
 impl JqlCmd {
     pub fn new(jql: HttpJql, json: bool) -> Self {
-        Self { jql, json }
+        Self {
+            jql,
+            json,
+            ..Self::default()
+        }
     }
 }
 
@@ -30,7 +40,13 @@ impl From<JqlCmd> for TaskSequence {
 #[async_trait(?Send)]
 impl AsyncTask for JqlCmd {
     async fn exec(&self, ctx: Arc<Context>) -> Return {
-        let resp = self.jql.exec_http(ctx.clone()).await?;
+        let jql_http = self
+            .jql
+            .clone()
+            .max_opt(self.max)
+            .fields_opt(self.fields.clone())
+            .build();
+        let resp = jql_http.exec_http(ctx.clone()).await?;
         if self.json {
             Ok(TaskOutput::string(resp))
         } else {

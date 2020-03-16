@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use chrono::{Date, Utc};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DateRange {
     pub dates: Vec<Date<Utc>>,
 }

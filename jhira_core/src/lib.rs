@@ -10,6 +10,7 @@ extern crate serde;
 #[macro_use]
 extern crate prettytable;
 
+pub mod args;
 pub mod async_task;
 pub mod auth;
 pub mod context;
@@ -22,6 +23,7 @@ pub mod jhira;
 pub mod jql;
 pub mod login;
 pub mod self_update;
+pub mod subcommands;
 pub mod task;
 pub mod worklog;
 

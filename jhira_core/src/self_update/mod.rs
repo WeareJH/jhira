@@ -14,20 +14,20 @@ use structopt::StructOpt;
 const GITHUB_URL: &str = "https://api.github.com/repos/wearejh/jhira/releases/latest";
 
 #[derive(Debug, StructOpt, Clone)]
-pub struct SelfUpdate {
+pub struct SelfUpdateCmd {
     /// Accept all prompts and update automatically
     #[structopt(long = "yes", short = "y")]
     pub yes: bool,
 }
 
-impl From<SelfUpdate> for TaskSequence {
-    fn from(self_update: SelfUpdate) -> Self {
+impl From<SelfUpdateCmd> for TaskSequence {
+    fn from(self_update: SelfUpdateCmd) -> Self {
         Ok(vec![Box::new(self_update)])
     }
 }
 
 #[async_trait(?Send)]
-impl AsyncTask for SelfUpdate {
+impl AsyncTask for SelfUpdateCmd {
     async fn exec(&self, _ctx: Arc<Context>) -> Return {
         run_self_update(self.yes).await?;
         Ok(TaskOutput::Done)
