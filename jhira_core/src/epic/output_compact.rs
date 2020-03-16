@@ -12,6 +12,7 @@ pub fn output_compact(epic: &Epic, context: &Context) -> String {
         context,
         CompactOpts {
             show_assignee: true,
+            sort_by: None,
         },
     );
 

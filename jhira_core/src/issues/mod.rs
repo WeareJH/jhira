@@ -7,3 +7,4 @@ pub mod jira_issues;
 pub mod ls;
 pub mod output_compact;
 pub mod output_verbose;
+pub mod sort_by;

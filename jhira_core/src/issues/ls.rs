@@ -102,7 +102,7 @@ impl IssuesLs {
             .map(|ids| format!("issue in ({})", ids.join(",")))
     }
     ///
-    /// Should the issue list be sorted by updated time?
+    /// Should the issue list be orderd by updated time (jql only)
     ///
     pub fn jql_order(&self) -> Option<String> {
         Some(String::from("order by updated"))
@@ -228,7 +228,14 @@ impl AsyncTask for IssuesLs {
         let output = if self.verbose {
             output_verbose(&issues, &ctx)
         } else {
-            output_compact(&issues, &ctx, CompactOpts { show_assignee })
+            output_compact(
+                &issues,
+                &ctx,
+                CompactOpts {
+                    show_assignee,
+                    sort_by: None,
+                },
+            )
         };
 
         Ok(TaskOutput::string(output))

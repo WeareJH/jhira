@@ -6,7 +6,7 @@ use crate::issues::issue_link::IssueLink;
 use crate::issues::issues_types::JiraFields;
 use std::sync::Arc;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub struct JiraIssue {
     pub fields: JiraFields,
     pub key: String,

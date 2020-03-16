@@ -4,17 +4,25 @@ use prettytable::Table;
 
 use crate::issues::issue_link::IssueLink;
 use crate::issues::jira_issues::JiraIssues;
+use crate::issues::sort_by::SortBy;
 use ansi_term::Colour::{Cyan, Green};
 
 pub struct CompactOpts {
     pub show_assignee: bool,
+    pub sort_by: Option<SortBy>,
 }
 
 pub fn output_compact(issues: &JiraIssues, context: &Context, opts: CompactOpts) -> String {
     let mut table = Table::new();
     table.set_format(*format::consts::FORMAT_CLEAN);
 
-    for v in &issues.issues {
+    // people.sort_by(|a, b| b.age.cmp(&a.age));
+    let sorted = opts
+        .sort_by
+        .map(|sort_by| sort_by.sort(issues.issues.clone()))
+        .unwrap_or_else(|| issues.issues.clone());
+
+    for v in sorted {
         let sub_task_count = v
             .fields
             .subtasks
@@ -105,11 +113,19 @@ fn summary_table(issues: &JiraIssues) -> String {
 
 #[test]
 fn test_output_compact() {
-    // use crate::auth::Auth;
+    use crate::auth::Auth;
     // let b = include_str!("../../../fixtures/issues-sub-task.json");
+    let b = include_str!("../../../large-list.json");
     // let b = include_str!("../../../epic.json");
-    // let i: JiraIssues = serde_json::from_str(b).expect("Should deserialize");
-    // let ctx: Context = Auth::default().into();
-    // let next = output_compact(&i, &ctx);
-    // println!("{}", next);
+    let i: JiraIssues = serde_json::from_str(b).expect("Should deserialize");
+    let ctx: Context = Auth::default().into();
+    let next = output_compact(
+        &i,
+        &ctx,
+        CompactOpts {
+            show_assignee: true,
+            sort_by: Some(SortBy::Assignee),
+        },
+    );
+    println!("{}", next);
 }

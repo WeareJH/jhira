@@ -56,6 +56,7 @@ impl AsyncTask for JqlCmd {
                 &ctx.clone(),
                 CompactOpts {
                     show_assignee: true,
+                    sort_by: None,
                 },
             );
             Ok(TaskOutput::string(output))
