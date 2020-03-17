@@ -129,7 +129,7 @@ impl IssuesLs {
     pub fn jql_epic(&self) -> Option<String> {
         self.epic
             .as_ref()
-            .map(|epic_key| format!(r#""Epic Link" = {id} OR parent in ("{id}")"#, id = epic_key))
+            .map(|epic_key| format!(r#""Epic Link" = {id}"#, id = epic_key))
     }
     ///
     /// Should the issue list be filtered by the issue type?
