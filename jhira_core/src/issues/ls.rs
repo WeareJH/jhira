@@ -5,6 +5,7 @@ use crate::http_jql::HttpJql;
 use crate::issues::jira_issues::JiraIssues;
 use crate::issues::output_compact::{output_compact, CompactOpts};
 use crate::issues::output_verbose::output_verbose;
+use crate::issues::sort_by::SortBy;
 use crate::task::TaskSequence;
 use async_trait::async_trait;
 use std::str::FromStr;
@@ -55,6 +56,14 @@ pub struct IssuesLs {
     /// Max number of results to fetch
     #[structopt(long = "max")]
     pub max: Option<u16>,
+
+    /// The id of an epic
+    #[structopt(long = "epic")]
+    pub epic: Option<String>,
+
+    /// Which order to show the results in
+    #[structopt(long = "sort")]
+    pub sort: Option<SortBy>,
 }
 
 impl IssuesLs {
@@ -73,6 +82,11 @@ impl IssuesLs {
         }
 
         if self.all {
+            return false;
+        }
+
+        // if it's explicitly an epic, get all issues
+        if self.epic.is_some() {
             return false;
         }
 
@@ -106,6 +120,16 @@ impl IssuesLs {
     ///
     pub fn jql_order(&self) -> Option<String> {
         Some(String::from("order by updated"))
+    }
+    ///
+    /// Should the issue list be filtered by a single epic
+    ///
+    /// eg: `issues ls --kind epic`
+    ///
+    pub fn jql_epic(&self) -> Option<String> {
+        self.epic
+            .as_ref()
+            .map(|epic_key| format!(r#""Epic Link" = {id} OR parent in ("{id}")"#, id = epic_key))
     }
     ///
     /// Should the issue list be filtered by the issue type?
@@ -195,6 +219,7 @@ impl From<&IssuesLs> for HttpJql {
         let and_items: String = vec![
             fetch.jql_assignee(),
             fetch.jql_id(),
+            fetch.jql_epic(),
             fetch.jql_summary(),
             fetch.jql_project(),
             fetch.jql_kind(),
@@ -233,7 +258,7 @@ impl AsyncTask for IssuesLs {
                 &ctx,
                 CompactOpts {
                     show_assignee,
-                    sort_by: None,
+                    sort_by: self.sort.clone(),
                 },
             )
         };
