@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::issues::jira_issue::JiraIssue;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct JiraIssues {
     pub issues: Vec<JiraIssue>,
     pub total: u16,

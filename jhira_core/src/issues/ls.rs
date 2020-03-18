@@ -2,6 +2,8 @@ use crate::async_task::{AsyncTask, TaskOutput};
 use crate::context::Context;
 use crate::http::HttpString;
 use crate::http_jql::HttpJql;
+use crate::issues::format::Format;
+use crate::issues::format_git_msg::FormatGitMsg;
 use crate::issues::jira_issues::JiraIssues;
 use crate::issues::output_compact::{output_compact, CompactOpts};
 use crate::issues::output_verbose::output_verbose;
@@ -64,6 +66,10 @@ pub struct IssuesLs {
     /// Which order to show the results in
     #[structopt(long = "sort")]
     pub sort: Option<SortBy>,
+
+    /// Which format should be used for output (default is a table)
+    #[structopt(long = "format", short = "f")]
+    pub format: Format,
 }
 
 impl IssuesLs {
@@ -253,14 +259,23 @@ impl AsyncTask for IssuesLs {
         let output = if self.verbose {
             output_verbose(&issues, &ctx)
         } else {
-            output_compact(
-                &issues,
-                &ctx,
-                CompactOpts {
-                    show_assignee,
-                    sort_by: self.sort.clone(),
-                },
-            )
+            match self.format {
+                Format::Table => output_compact(
+                    &issues,
+                    &ctx,
+                    CompactOpts {
+                        show_assignee,
+                        sort_by: self.sort.clone(),
+                    },
+                ),
+                Format::GitCommitMsg => {
+                    let f = FormatGitMsg {
+                        sort_by: self.sort.clone(),
+                        issues,
+                    };
+                    f.to_string()
+                }
+            }
         };
 
         Ok(TaskOutput::string(output))
