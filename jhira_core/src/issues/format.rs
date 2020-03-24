@@ -38,3 +38,13 @@ impl Default for Format {
         Format::Table
     }
 }
+
+impl std::string::ToString for Format {
+    fn to_string(&self) -> String {
+        match self {
+            Format::Table => "table",
+            Format::GitCommitMsg => "git-msg",
+        }
+        .to_string()
+    }
+}

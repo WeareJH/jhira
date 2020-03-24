@@ -68,7 +68,7 @@ pub struct IssuesLs {
     pub sort: Option<SortBy>,
 
     /// Which format should be used for output (default is a table)
-    #[structopt(long = "format", short = "f")]
+    #[structopt(long = "format", short = "f", default_value)]
     pub format: Format,
 }
 

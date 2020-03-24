@@ -8,17 +8,16 @@ use std::sync::Arc;
 /// ```
 /// assert_eq!(2, 1)
 /// ```
-fn main() -> Result<(), failure::Error> {
+#[tokio::main]
+async fn main() -> Result<(), failure::Error> {
     env_logger::init();
     let args = std::env::args().collect::<Vec<String>>();
-
-    match async_std::task::block_on(run(args)) {
+    match run(args).await {
         Ok(..) => {
             // do nothing if all good!
         }
         Err(e) => eprintln!("{}", e.to_string()),
     };
-
     Ok(())
 }
 
