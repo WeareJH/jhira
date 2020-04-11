@@ -31,6 +31,10 @@ pub struct IssuesLs {
     #[structopt(long = "summary", short = "s")]
     pub summary: Option<String>,
 
+    /// Search by description text, eg: 'database'
+    #[structopt(long = "desc")]
+    pub description: Option<String>,
+
     /// Which issue ids to fetch
     #[structopt(long = "id")]
     pub id: Option<Vec<String>>,
@@ -203,6 +207,16 @@ impl IssuesLs {
             .map(|summary| format!(r#"summary ~ "{}""#, snailquote::escape(summary)))
     }
     ///
+    /// Should the issue list be filtered by a search in the issue description
+    ///
+    /// eg: `issues ls --desc database`
+    ///
+    pub fn jql_desc(&self) -> Option<String> {
+        self.description
+            .as_ref()
+            .map(|summary| format!(r#"description ~ "{}""#, snailquote::escape(summary)))
+    }
+    ///
     /// Perform the actual fetch by converting this type into
     /// a `HttpJql`
     ///
@@ -227,6 +241,7 @@ impl From<&IssuesLs> for HttpJql {
             fetch.jql_id(),
             fetch.jql_epic(),
             fetch.jql_summary(),
+            fetch.jql_desc(),
             fetch.jql_project(),
             fetch.jql_kind(),
             fetch.jql_not_kind(),

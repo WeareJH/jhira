@@ -41,7 +41,7 @@ impl FromStr for SortBy {
                     given: String::from(s),
                     valid: String::from(HELP),
                 };
-                Err(err.into())
+                Err(err)
             }
         }
     }
