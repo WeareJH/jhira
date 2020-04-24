@@ -74,6 +74,10 @@ pub struct IssuesLs {
     /// Which format should be used for output (default is a table)
     #[structopt(long = "format", short = "f", default_value)]
     pub format: Format,
+
+    /// Should issues be limited to active sprints?
+    #[structopt(long = "active")]
+    pub active_sprint: bool,
 }
 
 impl IssuesLs {
@@ -140,6 +144,18 @@ impl IssuesLs {
         self.epic
             .as_ref()
             .map(|epic_key| format!(r#""Epic Link" = {id}"#, id = epic_key))
+    }
+    ///
+    /// Should the issue list be filtered by active sprint
+    ///
+    /// eg: `issues ls --project abc --active`
+    ///
+    pub fn jql_active_sprint(&self) -> Option<String> {
+        if self.active_sprint {
+            Some(String::from("Sprint in openSprints()"))
+        } else {
+            None
+        }
     }
     ///
     /// Should the issue list be filtered by the issue type?
@@ -240,6 +256,7 @@ impl From<&IssuesLs> for HttpJql {
             fetch.jql_assignee(),
             fetch.jql_id(),
             fetch.jql_epic(),
+            fetch.jql_active_sprint(),
             fetch.jql_summary(),
             fetch.jql_desc(),
             fetch.jql_project(),
