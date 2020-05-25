@@ -3,7 +3,7 @@ use crate::async_task::AsyncTask;
 use crate::auth::Auth;
 use crate::context::Context;
 use crate::task::TaskSequence;
-use structopt::StructOpt;
+use structopt::{StructOpt, clap};
 
 #[derive(Debug)]
 pub struct Jhira {
@@ -42,4 +42,35 @@ impl Jhira {
             args: opt2,
         })
     }
+}
+
+
+// fn get_app() -> impl StructOpt {
+//
+// }
+
+#[test]
+fn test_from_iter_safe() {
+
+    // let input = &["prog", "--cwd", "/users/shane", "--help"];
+    let input = &["prog", "db-import", "my-file.sql"];
+    let invalid = &["prog", "hell"];
+
+    let a = crate::my_mod::Main::from_iter_safe(input);
+    match a {
+        Ok(main) => {
+            dbg!(main);
+        },
+        Err(clap::Error {
+            kind: clap::ErrorKind::HelpDisplayed,
+            message,
+            info
+        }) => println!("help->{}", message),
+        Err(clap::Error {
+            kind: clap::ErrorKind::VersionDisplayed,
+            message,
+            info,
+        }) => println!("help->{}", message),
+        Err(other) => eprintln!("not help or version->\n{:#?}", other)
+    };
 }
