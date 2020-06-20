@@ -6,22 +6,31 @@ macro_rules! append_subcommands {
         #[derive(StructOpt, Debug)]
         pub struct Main {
             #[structopt(long="dryrun")]
-            dryrun: bool,
+            pub dryrun: bool,
             #[structopt(long="config")]
             /// path to a wf2.yml config file
-            config: Option<std::path::PathBuf>,
+            pub config: Option<std::path::PathBuf>,
             #[structopt(long="cwd")]
             /// Sets the CWD for all docker commands
-            cwd: Option<std::path::PathBuf>,
+            pub cwd: Option<std::path::PathBuf>,
             #[structopt(subcommand)]
-            cmd: Subcommands
+            pub cmd: Subcommands
         }
         #[derive(StructOpt, Debug)]
+        #[structopt(setting = clap::AppSettings::InferSubcommands)]
         pub enum Subcommands {
             $(
-                #[structopt(flatten)]
                 $command_ident($command_ident),
             )*
+        }
+        impl Subcommands {
+            pub fn select(self) -> Box<dyn Exec> {
+                match self {
+                    $(
+                        Self::$command_ident(inner) => Box::new(inner),
+                    )*
+                }
+            }
         }
     };
 }

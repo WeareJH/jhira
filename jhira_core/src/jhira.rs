@@ -3,7 +3,8 @@ use crate::async_task::AsyncTask;
 use crate::auth::Auth;
 use crate::context::Context;
 use crate::task::TaskSequence;
-use structopt::{StructOpt, clap};
+use structopt::{StructOpt, clap, clap::AppSettings};
+use async_trait::async_trait;
 
 #[derive(Debug)]
 pub struct Jhira {
@@ -44,22 +45,26 @@ impl Jhira {
     }
 }
 
-
-// fn get_app() -> impl StructOpt {
-//
-// }
+#[async_trait(?Send)]
+pub trait Exec {
+    async fn exec(&self, ctx: &Context) -> Result<(), failure::Error>;
+}
 
 #[test]
 fn test_from_iter_safe() {
 
     // let input = &["prog", "--cwd", "/users/shane", "--help"];
-    let input = &["prog", "db-import", "my-file.sql"];
+    let input = &["prog", "up"];
     let invalid = &["prog", "hell"];
-
     let a = crate::my_mod::Main::from_iter_safe(input);
+    use crate::my_mod::*;
+    let ctx = Context::default();
+
     match a {
-        Ok(main) => {
-            dbg!(main);
+        Ok(Main { cmd, .. }) => {
+            let inner = cmd.select();
+            let out = inner.exec(&ctx);
+            // dbg!(cmd.select());
         },
         Err(clap::Error {
             kind: clap::ErrorKind::HelpDisplayed,
@@ -71,6 +76,7 @@ fn test_from_iter_safe() {
             message,
             info,
         }) => println!("help->{}", message),
-        Err(other) => eprintln!("not help or version->\n{:#?}", other)
+        Err(other) => eprintln!("not help or version->\n{:#?}", other),
+        _ => unimplemented!()
     };
 }
