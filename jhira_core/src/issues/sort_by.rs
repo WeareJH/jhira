@@ -9,6 +9,7 @@ pub enum SortBy {
     // Project,
     Summary,
     Key,
+    Priority,
 }
 
 const HELP: &str = "
@@ -18,6 +19,7 @@ const HELP: &str = "
     To sort on assignee:   'assignee' or 'name'
     To sort on title:      'summary' or 'title'
     To sort on id:         'key' or 'id'
+    To sort on priority:   'priority' or 'p'
 ";
 
 #[derive(Fail, Debug)]
@@ -36,6 +38,7 @@ impl FromStr for SortBy {
             "assignee" | "name" => Ok(SortBy::Assignee),
             "summary" | "title" => Ok(SortBy::Summary),
             "key" | "id" => Ok(SortBy::Key),
+            "priority" | "p" => Ok(SortBy::Priority),
             _ => {
                 let err = SortByError::Invalid {
                     given: String::from(s),
@@ -57,6 +60,7 @@ impl SortBy {
                 SortBy::Key => a.key.cmp(&b.key),
                 // SortBy::Project => a.fields.,
                 SortBy::Summary => a.fields.summary.cmp(&b.fields.summary),
+                SortBy::Priority => b.fields.priority.name.cmp(&a.fields.priority.name),
             }
         });
         issues

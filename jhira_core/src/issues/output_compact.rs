@@ -4,8 +4,9 @@ use prettytable::Table;
 
 use crate::issues::issue_link::IssueLink;
 use crate::issues::jira_issues::JiraIssues;
+use crate::issues::priority::PriorityName;
 use crate::issues::sort_by::SortBy;
-use ansi_term::Colour::{Cyan, Green};
+use ansi_term::Colour::{Cyan, Green, Red};
 
 pub struct CompactOpts {
     pub show_assignee: bool,
@@ -29,6 +30,7 @@ pub fn output_compact(issues: &JiraIssues, context: &Context, opts: CompactOpts)
             .map(|tasks| tasks.len())
             .unwrap_or(0);
         let has_sub_tasks = sub_task_count > 0;
+        let row_0 = priority_string(&v.fields.priority.name);
         let row_1 = &v.fields.issuetype.name;
         let row_2 = &v.fields.status.name;
         let row_3 = &v.short_summary();
@@ -45,6 +47,7 @@ pub fn output_compact(issues: &JiraIssues, context: &Context, opts: CompactOpts)
 
         if let Some(assignee) = row_5 {
             table.add_row(row![
+                row_0,
                 Green.bold().paint(row_1),
                 Cyan.paint(row_2),
                 row_3,
@@ -53,6 +56,7 @@ pub fn output_compact(issues: &JiraIssues, context: &Context, opts: CompactOpts)
             ]);
         } else {
             table.add_row(row![
+                row_0,
                 Green.bold().paint(row_1),
                 Cyan.paint(row_2),
                 row_3,
@@ -64,6 +68,7 @@ pub fn output_compact(issues: &JiraIssues, context: &Context, opts: CompactOpts)
             let iter = sub.iter().enumerate();
             let count = iter.len();
             for (i, v) in iter {
+                let row_0 = priority_string(&v.fields.priority.name);
                 let row_1 = &v.fields.issuetype.name;
                 let row_2 = &v.fields.status.name;
                 let row_3 = &v.short_summary();
@@ -79,6 +84,7 @@ pub fn output_compact(issues: &JiraIssues, context: &Context, opts: CompactOpts)
                 // todo, subtasks cannot access assignee yet...
                 if let Some(assignee) = row_5 {
                     table.add_row(row![
+                        row_0,
                         Green.bold().paint(row_1),
                         Cyan.paint(row_2),
                         row_3,
@@ -87,6 +93,7 @@ pub fn output_compact(issues: &JiraIssues, context: &Context, opts: CompactOpts)
                     ]);
                 } else {
                     table.add_row(row![
+                        row_0,
                         Green.bold().paint(row_1),
                         Cyan.paint(row_2),
                         row_3,
@@ -127,4 +134,13 @@ fn test_output_compact() {
     //     },
     // );
     // println!("{}", next);
+}
+
+fn priority_string(p: &PriorityName) -> String {
+    match p {
+        PriorityName::Low => p.to_string(),
+        PriorityName::Medium => Green.paint(p.to_string()).to_string(),
+        PriorityName::High => Cyan.bold().paint(p.to_string()).to_string(),
+        PriorityName::Critical => Red.bold().paint(p.to_string()).to_string(),
+    }
 }
