@@ -26,6 +26,7 @@ pub mod login;
 pub mod self_update;
 pub mod subcommands;
 pub mod task;
+pub mod todo;
 pub mod worklog;
 
 pub use jhira::*;

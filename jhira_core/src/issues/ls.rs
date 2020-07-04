@@ -17,7 +17,7 @@ use structopt::StructOpt;
 ///
 /// List issues
 ///
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, StructOpt, Clone, Default)]
 pub struct IssuesLs {
     /// Issue search against all users (rather than just assigned)
     #[structopt(long = "all")]

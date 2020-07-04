@@ -4,6 +4,7 @@ use crate::jql::JqlCmd;
 use crate::login::LoginCmd;
 use crate::self_update::SelfUpdateCmd;
 use crate::task::TaskSequence;
+use crate::todo::Todo;
 use crate::worklog::WorklogCmd;
 use structopt::StructOpt;
 
@@ -20,6 +21,8 @@ pub enum Subcommands {
     Epic(EpicCmd),
     #[structopt(name = "jql")]
     Jql(JqlCmd),
+    #[structopt(name = "todo")]
+    Todo(Todo),
     #[structopt(name = "worklog", alias = "wl")]
     Worklog {
         #[structopt(subcommand)]
@@ -40,6 +43,7 @@ impl From<Subcommands> for TaskSequence {
             Jql(cmd) => cmd.into(),
             Login(cmd) => cmd.into(),
             SelfUpdate(self_update) => self_update.into(),
+            Todo(todo) => todo.into(),
         }
     }
 }

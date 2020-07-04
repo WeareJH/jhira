@@ -2,7 +2,6 @@ pub mod format;
 pub mod format_git_msg;
 pub mod issue_link;
 pub mod issues_cmd;
-pub mod issues_ls;
 pub mod issues_types;
 pub mod jira_issue;
 pub mod jira_issues;
