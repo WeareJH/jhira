@@ -25,6 +25,7 @@ impl From<Todo> for TaskSequence {
                 "refinement".to_string(),
                 "ready".to_string(),
                 "work in progress".to_string(),
+                "new".to_string(),
             ]),
             ..IssuesLs::default()
         };
