@@ -4,7 +4,9 @@ use async_trait::async_trait;
 use crate::Exec;
 use crate::context::Context;
 
+/// Bring up the containers
 #[derive(StructOpt, Debug, Clone)]
+#[structopt(alias = "up")]
 pub struct Up {
     #[structopt(short, long)]
     attached: bool,
@@ -53,9 +55,7 @@ impl Exec for DbImport {
     }
 }
 
-append_subcommands!(
-    as Main,
-    Up,
-    Down,
-    DbImport
-);
+#[jhira_derive::cli(Up, Down, DbImport)]
+pub struct M2 {
+    pub name: String,
+}

@@ -46,7 +46,7 @@ impl Jhira {
 }
 
 #[async_trait(?Send)]
-pub trait Exec {
+pub trait Exec: std::fmt::Debug {
     async fn exec(&self, ctx: &Context) -> Result<(), failure::Error>;
 }
 
@@ -54,28 +54,29 @@ pub trait Exec {
 fn test_from_iter_safe() {
 
     // let input = &["prog", "--cwd", "/users/shane", "--help"];
-    let input = &["prog", "up"];
-    let invalid = &["prog", "hell"];
-    let a = crate::my_mod::Main::from_iter_safe(input);
     use crate::my_mod::*;
     let ctx = Context::default();
+    let input = vec!["prog", "--help"];
+    let invalid = &["prog", "hell"];
+    let a = crate::my_mod::M2::get_cli(input);
 
     match a {
         Ok(Main { cmd, .. }) => {
             let inner = cmd.select();
-            let out = inner.exec(&ctx);
+            dbg!(inner);
+            // let out = inner.exec(&ctx);
             // dbg!(cmd.select());
         },
         Err(clap::Error {
-            kind: clap::ErrorKind::HelpDisplayed,
-            message,
-            info
-        }) => println!("help->{}", message),
+                kind: clap::ErrorKind::HelpDisplayed,
+                message,
+                info
+            }) => println!("help->{}", message),
         Err(clap::Error {
-            kind: clap::ErrorKind::VersionDisplayed,
-            message,
-            info,
-        }) => println!("help->{}", message),
+                kind: clap::ErrorKind::VersionDisplayed,
+                message,
+                info,
+            }) => println!("help->{}", message),
         Err(other) => eprintln!("not help or version->\n{:#?}", other),
         _ => unimplemented!()
     };

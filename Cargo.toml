@@ -2,5 +2,6 @@
 
 members = [
     "jhira",
-    "jhira_core"
+    "jhira_core",
+    "jhira_derive"
 ]
